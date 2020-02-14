@@ -29,3 +29,17 @@ let ``Given HtmlDocument, calling findImages, must return list of image links an
 
     let html = HtmlDocument.Parse content
     findImages html |> should equivalent [("Test text 1", "test_link_1"); ("Test text 2", "test_link_2")]
+
+[<TestCase("Test text 1", "test_link_1")>]
+[<TestCase("Test text 2", "test_link_2")>]
+let ``Given HtmlDocument and LinkText, calling findLinkByText, must return first occurrence of link whos text matches LinkText`` (linkText, expectedLink) =
+    let content = "
+        <html>\
+        <body>\
+            <a href=\"test_link_1\">Test text 1</a>\
+            <a href=\"test_link_2\">Test text 2</a>\ 
+        </body>\
+        </html>"
+
+    let html = HtmlDocument.Parse content
+    findLinkByText html linkText |> should equal expectedLink

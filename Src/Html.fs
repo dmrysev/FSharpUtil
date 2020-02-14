@@ -17,8 +17,8 @@ let findImages (html: HtmlDocument) =
         (alt.Value, src.Value)
     )
 
-let findLinkByText html textValue =
+let findLinkByText html linkText =
     html
     |> findLinks
-    |> Seq.find (fun (text, _) -> text = textValue)
+    |> Seq.find (fun (text, _) -> text = linkText)
     |> snd
