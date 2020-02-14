@@ -5,7 +5,7 @@ open FsUnit
 open FSharp.Data
 
 [<Test>]
-let ``Given html document, calling findLinks, must return list of links and their names`` () =
+let ``Given HtmlDocument, calling findLinks, must return list of links and their names`` () =
     let content = "
         <html>\
         <body>\
@@ -18,7 +18,7 @@ let ``Given html document, calling findLinks, must return list of links and thei
     findLinks html |> should equivalent [("Test text 1", "test_link_1"); ("Test text 2", "test_link_2")]
 
 [<Test>]
-let ``Given html document, calling findImages, must return list of image links and their names`` () =
+let ``Given HtmlDocument, calling findImages, must return list of image links and their names`` () =
     let content = "
         <html>\
         <body>\
