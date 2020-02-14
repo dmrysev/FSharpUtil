@@ -16,3 +16,9 @@ let findImages (html: HtmlDocument) =
         let src = x.TryGetAttribute("src") |> Option.map(fun a -> a.Value())
         (alt.Value, src.Value)
     )
+
+let findLinkByText html textValue =
+    html
+    |> findLinks
+    |> Seq.find (fun (text, _) -> text = textValue)
+    |> snd
