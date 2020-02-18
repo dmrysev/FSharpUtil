@@ -3,8 +3,7 @@ module Util.Http
 open FSharp.Data
 open System.IO
 
-let downloadRawContent (pageUrl: string) (additionalCookies: seq<string*string> option) =
-    let additionalCookies = defaultArg additionalCookies Seq.empty
+let downloadRawContent (pageUrl: string) (additionalCookies: seq<string*string>) =
     let allCookies = 
         Http.Request(pageUrl).Cookies 
         |> Map.toSeq
