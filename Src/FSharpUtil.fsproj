@@ -9,7 +9,6 @@
     <Compile Include="StringMatch.fs" />
     <Compile Include="FileSystem.fs" />
     <Compile Include="Html.fs" />
-    <Compile Include="Http.fs" />
     <Compile Include="Math.fs" />
   </ItemGroup>
 
