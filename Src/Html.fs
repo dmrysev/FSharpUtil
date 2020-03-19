@@ -1,6 +1,7 @@
 module Util.Html
 
 open FSharp.Data
+open System.Text.RegularExpressions
 
 let findLinks (html: HtmlDocument) = 
     html.Descendants "a"
@@ -22,3 +23,12 @@ let findLinkByText html linkText =
     |> findLinks
     |> Seq.find (fun (text, _) -> text = linkText)
     |> snd
+
+let findLinksByRegex regexPattern html =
+    let isMatch link =
+        let regex = Regex regexPattern
+        regex.IsMatch link
+
+    findLinks html
+    |> Seq.map snd
+    |> Seq.filter isMatch
