@@ -16,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Src\FSharpUtil.fsproj" />
+    <ProjectReference Include="..\FSharpUtil.fsproj" />
   </ItemGroup>
 
 </Project>
