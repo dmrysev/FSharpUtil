@@ -11,6 +11,15 @@ let fixFileName (fileName: string) =
 let isDirectoryEmpty (folderPath: string) =
     Directory.GetFileSystemEntries(folderPath).Length = 0
 
+let isDirectoryNotEmpty (folderPath: string) = 
+    not <| isDirectoryEmpty folderPath
+
+let isPathExists (path: string) = 
+    Directory.Exists path || File.Exists path
+
+let isPathNotExists (path: string) = 
+    not <| isPathExists path
+
 let findAvailablePathWithAppendix (filePath: string) = 
     let rec findAppendix number =
         let newFilePath = sprintf "%s_%i" filePath number
