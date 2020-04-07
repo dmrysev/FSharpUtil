@@ -24,6 +24,12 @@ let findLinkByText html linkText =
     |> Seq.find (fun (text, _) -> text = linkText)
     |> snd
 
+let findLinkskByPartialText (linkText: string) (html: HtmlDocument) =
+    html
+    |> findLinks
+    |> Seq.filter (fun (text, _) -> text.Contains(linkText))
+    |> Seq.map snd
+
 let findLinksByRegex regexPattern html =
     let isMatch link =
         let regex = Regex regexPattern
