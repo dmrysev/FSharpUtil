@@ -27,3 +27,5 @@ let findAvailablePathWithAppendix (filePath: string) =
         then findAppendix (number + 1)
         else newFilePath
     findAppendix 1
+
+let homeDir = System.Environment.GetFolderPath(System.Environment.SpecialFolder.UserProfile)
