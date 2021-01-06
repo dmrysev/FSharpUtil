@@ -29,3 +29,6 @@ let findAvailablePathWithAppendix (filePath: string) =
     findAppendix 1
 
 let homeDir = System.Environment.GetFolderPath(System.Environment.SpecialFolder.UserProfile)
+
+let countFiles (folderPath: string) =
+    Directory.EnumerateFiles folderPath |> Seq.length
