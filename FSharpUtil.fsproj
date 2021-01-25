@@ -12,6 +12,7 @@
     <Compile Include="Http.fs" />
     <Compile Include="Math.fs" />
     <Compile Include="Regex.fs" />
+    <Compile Include="Seq.fs" />
   </ItemGroup>
 
   <ItemGroup>
