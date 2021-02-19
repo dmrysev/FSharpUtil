@@ -1,6 +1,10 @@
 module Util.IO
 
+open Util.FileSystem
 open System.IO
+
+module Path =
+    let applicationDataDirPath = Util.FileSystem.homeDir/".local/share/LinuxUtil"
 
 module File =
     let appendLine (filePath: string) (text: string) =
@@ -8,3 +12,11 @@ module File =
         use streamWriter = new StreamWriter(fileStream)
         streamWriter.WriteLine(text)
         
+    let tail (filePath: string) (linesCount: int) =
+        let command = sprintf "tail -n %i %s" linesCount filePath
+        let p = Util.Process.run command
+        p.WaitForExit()
+        let output = p.StandardOutput.ReadToEnd().Replace("\r", "")
+        output.Split('\n')
+
+    let lastLine (filePath: string) = tail filePath 1 |> Seq.head        
