@@ -5,13 +5,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="String.fs" />
     <Compile Include="IO/Path.fs" />
     <Compile Include="Environment.fs" />
-    <Compile Include="String.fs" />
     <Compile Include="StringMatch.fs" />
     <Compile Include="Process.fs" />
     <Compile Include="IO/File.fs" />
-    <Compile Include="FileSystem.fs" />
+    <Compile Include="IO/Directory.fs" />
     <Compile Include="Html.fs" />
     <Compile Include="Http.fs" />
     <Compile Include="Math.fs" />
