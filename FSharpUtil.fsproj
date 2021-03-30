@@ -17,6 +17,7 @@
     <Compile Include="Math.fs" />
     <Compile Include="Regex.fs" />
     <Compile Include="Seq.fs" />
+    <Compile Include="VersionControl.fs" />
   </ItemGroup>
 
   <ItemGroup>
