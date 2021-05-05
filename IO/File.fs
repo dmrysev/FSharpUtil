@@ -2,7 +2,14 @@ module Util.IO.File
 
 open System.IO
 
+let create (filePath: string) =
+    let dirPath = System.IO.Path.GetDirectoryName filePath
+    System.IO.Directory.CreateDirectory dirPath |> ignore
+    use fileStream = File.Create filePath
+    ()
+
 let appendLine (filePath: string) (text: string) =
+    if not <| Util.IO.Path.exists filePath then create filePath
     use fileStream = File.Open(filePath, FileMode.Append)
     use streamWriter = new StreamWriter(fileStream)
     streamWriter.WriteLine(text)
