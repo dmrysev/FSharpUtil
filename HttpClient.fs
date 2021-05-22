@@ -8,9 +8,12 @@ let initHttpClient () =
     new HttpClient(handler)
 
 let getContent (httpClient: HttpClient) (url: string) =
-    let response = httpClient.GetAsync(url) |> Async.AwaitTask |> Async.RunSynchronously
-    let response = response.EnsureSuccessStatusCode()
-    response.Content.ReadAsStringAsync() |> Async.AwaitTask |> Async.RunSynchronously
+    async {
+        let message = new HttpRequestMessage(System.Net.Http.HttpMethod.Get, url)
+        use! response = httpClient.SendAsync(message, HttpCompletionOption.ResponseHeadersRead) |> Async.AwaitTask
+        use response = response.EnsureSuccessStatusCode()
+        return! response.Content.ReadAsStringAsync() |> Async.AwaitTask
+    } |> Async.RunSynchronously    
 
 let getContentWithHeader(httpClient: HttpClient) (url: string) =
     let message = new HttpRequestMessage(System.Net.Http.HttpMethod.Get, url)
