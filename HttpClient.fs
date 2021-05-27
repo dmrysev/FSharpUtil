@@ -15,6 +15,12 @@ let getContent (httpClient: HttpClient) (url: string) =
         return! response.Content.ReadAsStringAsync() |> Async.AwaitTask
     } |> Async.RunSynchronously    
 
+let parseHttpRequestErrorMessageStatusCode (errorMessage: string) =
+    Util.Regex.matchValue @"\d+" errorMessage |> int
+
+let parseStatusCode (httpRequestException: System.Net.Http.HttpRequestException) =
+    parseHttpRequestErrorMessageStatusCode httpRequestException.Message
+
 let getContentWithHeader(httpClient: HttpClient) (url: string) =
     let message = new HttpRequestMessage(System.Net.Http.HttpMethod.Get, url)
     message.Headers.Add("User-Agent", "Mozilla/5.0 (X11; Linux x86_64; rv:85.0) Gecko/20100101 Firefox/85.0")

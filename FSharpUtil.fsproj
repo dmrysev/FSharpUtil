@@ -12,12 +12,12 @@
     <Compile Include="Process.fs" />
     <Compile Include="IO/File.fs" />
     <Compile Include="IO/Directory.fs" />
-    <Compile Include="Html.fs" />
-    <Compile Include="Http.fs" />
-    <Compile Include="HttpClient.fs" />
     <Compile Include="Math.fs" />
     <Compile Include="Regex.fs" />
     <Compile Include="Seq.fs" />
+    <Compile Include="Html.fs" />
+    <Compile Include="Http.fs" />
+    <Compile Include="HttpClient.fs" />
     <Compile Include="VersionControl.fs" />
   </ItemGroup>
 
