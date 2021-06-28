@@ -6,6 +6,10 @@ let fixFileName (fileName: string) =
     let invalidChars = ['/'; '<'; '>'; ':'; '"'; '/'; '\\'; '|'; '?'; '*']
     Util.String.strip invalidChars fileName
 
+let fixPath (url: string) =
+    if url.EndsWith "/" then url.Remove(url.Length - 1, 1)
+    else url
+
 let exists (path: string) = 
     System.IO.Directory.Exists path || System.IO.File.Exists path
 
