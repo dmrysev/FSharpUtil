@@ -15,6 +15,7 @@
     <Compile Include="Math.fs" />
     <Compile Include="Regex.fs" />
     <Compile Include="Seq.fs" />
+    <Compile Include="Retry.fs" />
     <Compile Include="Html.fs" />
     <Compile Include="Http.fs" />
     <Compile Include="HttpClient.fs" />
