@@ -21,4 +21,9 @@ let tail (filePath: string) (linesCount: int) =
     let output = p.StandardOutput.ReadToEnd().Replace("\r", "")
     output.Split('\n')
 
-let lastLine (filePath: string) = tail filePath 1 |> Seq.head        
+let lastLine (filePath: string) = tail filePath 1 |> Seq.head
+
+let move (sourceFilePath: string) (destinationPath: string) =
+    let dirPath = System.IO.Path.GetDirectoryName destinationPath
+    System.IO.Directory.CreateDirectory dirPath |> ignore
+    System.IO.File.Move(sourceFilePath, destinationPath)
