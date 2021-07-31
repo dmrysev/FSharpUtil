@@ -24,3 +24,7 @@ let findAvailablePathWithAppendix (filePath: string) =
 let isDirectory path =
     let attributes = System.IO.File.GetAttributes path
     attributes.HasFlag(System.IO.FileAttributes.Directory)
+
+let isSymbolic path =
+    let pathInfo = System.IO.FileInfo path
+    pathInfo.Attributes.HasFlag(System.IO.FileAttributes.ReparsePoint)    
