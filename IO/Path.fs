@@ -34,6 +34,6 @@ let getSymbolicLinkRealPath path =
     let output = Util.Process.execute command
     output.Replace("\n", "")
 
-let createSymbolicLink sourcePath destinationPath =
-    let command = sprintf "ln -s '%s' '%s'" sourcePath destinationPath
+let createSymbolicLink (sourcePath: string) destinationPath =
+    let command = sprintf "ln -s \"%s\" \"%s\"" sourcePath destinationPath
     Util.Process.execute command |> ignore
