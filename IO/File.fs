@@ -1,5 +1,6 @@
 module Util.IO.File
 
+open Util.IO.Path
 open System.IO
 
 let create (filePath: string) =
@@ -24,6 +25,11 @@ let tail (filePath: string) (linesCount: int) =
 let lastLine (filePath: string) = tail filePath 1 |> Seq.head
 
 let move (sourceFilePath: string) (destinationPath: string) =
-    let dirPath = System.IO.Path.GetDirectoryName destinationPath
-    System.IO.Directory.CreateDirectory dirPath |> ignore
-    System.IO.File.Move(sourceFilePath, destinationPath)
+    if destinationPath |> Util.IO.Path.exists && destinationPath |> Util.IO.Path.isDirectory then
+        let fileName = System.IO.Path.GetFileName sourceFilePath
+        let destinationFilePath = destinationPath/fileName
+        System.IO.File.Move(sourceFilePath, destinationFilePath)
+    else
+        let dirPath = System.IO.Path.GetDirectoryName destinationPath
+        System.IO.Directory.CreateDirectory dirPath |> ignore
+        System.IO.File.Move(sourceFilePath, destinationPath)
