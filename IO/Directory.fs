@@ -5,3 +5,6 @@ let empty (folderPath: string) =
 
 let countFiles (folderPath: string) =
     System.IO.Directory.EnumerateFiles folderPath |> Seq.length
+
+let create dirPath = 
+    System.IO.Directory.CreateDirectory dirPath |> ignore
