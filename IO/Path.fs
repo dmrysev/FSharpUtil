@@ -20,3 +20,7 @@ let findAvailablePathWithAppendix (filePath: string) =
         then findAppendix (number + 1)
         else newFilePath
     findAppendix 1
+
+let isDirectory path =
+    let attributes = System.IO.File.GetAttributes path
+    attributes.HasFlag(System.IO.FileAttributes.Directory)
