@@ -33,3 +33,6 @@ let move (sourceFilePath: string) (destinationPath: string) =
         let dirPath = System.IO.Path.GetDirectoryName destinationPath
         System.IO.Directory.CreateDirectory dirPath |> ignore
         System.IO.File.Move(sourceFilePath, destinationPath)
+
+let delete path =
+    System.IO.File.Delete path
