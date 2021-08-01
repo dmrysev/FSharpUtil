@@ -8,3 +8,8 @@ let countFiles (folderPath: string) =
 
 let create dirPath = 
     System.IO.Directory.CreateDirectory dirPath |> ignore
+
+let delete dirPath = 
+    if Util.IO.Path.exists dirPath then
+        System.IO.Directory.Delete(dirPath, true)
+
