@@ -36,3 +36,11 @@ let move (sourceFilePath: string) (destinationPath: string) =
 
 let delete path =
     System.IO.File.Delete path
+
+let copy sourceFilePath destinationPath = 
+    if destinationPath |> Util.IO.Path.exists && destinationPath |> Util.IO.Path.isDirectory then
+        let fileName = System.IO.Path.GetFileName sourceFilePath
+        let destinationFilePath = destinationPath/fileName
+        System.IO.File.Copy(sourceFilePath, destinationFilePath)
+    else
+        System.IO.File.Copy(sourceFilePath, destinationPath)

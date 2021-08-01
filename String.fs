@@ -7,3 +7,8 @@ let strip chars str =
         str chars
 
 let extractInt text = Regex.Match(text, @"\d+").Value |> int
+
+let replace (oldValue: string) (newValue: string) (text: string) = text.Replace(oldValue, newValue)
+
+let split (separator: string) (text: string) = 
+    text.Split([|separator|], System.StringSplitOptions.None)

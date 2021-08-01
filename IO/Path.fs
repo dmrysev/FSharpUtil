@@ -37,3 +37,7 @@ let getSymbolicLinkRealPath path =
 let createSymbolicLink (sourcePath: string) destinationPath =
     let command = sprintf "ln -s \"%s\" \"%s\"" sourcePath destinationPath
     Util.Process.execute command |> ignore
+
+let replaceFileName (fileName: string) (newFileName: string) =
+    let extension = System.IO.Path.GetExtension fileName
+    newFileName + extension

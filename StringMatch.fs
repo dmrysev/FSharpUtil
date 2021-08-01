@@ -1,10 +1,9 @@
 module Util.StringMatch
 
-open System.Text.RegularExpressions
-
 let isImageFile text =
-    let regex = Regex @".+\.(png|jpg|jpeg)"
-    regex.IsMatch text
+    text |> Util.Regex.isMatch @".+\.(png|jpg|jpeg)"
 
 let notEmpty text = text <> ""
-    
+
+let isInteger text =
+    text |> Util.Regex.isMatch @"\d+"

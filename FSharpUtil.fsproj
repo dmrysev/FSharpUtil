@@ -9,11 +9,11 @@
     <Compile Include="String.fs" />
     <Compile Include="IO/Path.fs" />
     <Compile Include="Environment.fs" />
-    <Compile Include="StringMatch.fs" />
     <Compile Include="IO/File.fs" />
     <Compile Include="IO/Directory.fs" />
     <Compile Include="Math.fs" />
     <Compile Include="Regex.fs" />
+    <Compile Include="StringMatch.fs" />
     <Compile Include="Seq.fs" />
     <Compile Include="Retry.fs" />
     <Compile Include="Html.fs" />
