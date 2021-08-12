@@ -6,8 +6,7 @@ open System.IO
 let create (filePath: string) =
     let dirPath = System.IO.Path.GetDirectoryName filePath
     System.IO.Directory.CreateDirectory dirPath |> ignore
-    use fileStream = File.Create filePath
-    ()
+    File.Create filePath |> ignore
 
 let appendLine (filePath: string) (text: string) =
     if not <| exists filePath then create filePath
@@ -46,9 +45,9 @@ let copy sourceFilePath destinationPath =
     if destinationPath |> exists && destinationPath |> isDirectory then
         let fileName = System.IO.Path.GetFileName sourceFilePath
         let destinationFilePath = destinationPath/fileName
-        System.IO.File.Copy(sourceFilePath, destinationFilePath)
+        System.IO.File.Copy(sourceFilePath, destinationFilePath, true)
     else
-        System.IO.File.Copy(sourceFilePath, destinationPath)
+        System.IO.File.Copy(sourceFilePath, destinationPath, true)
 
 let popFirstLine (filePath: string) = 
     let firstLine = firstLine filePath
