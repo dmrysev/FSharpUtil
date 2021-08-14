@@ -110,3 +110,13 @@ let hasMessagesAsync queueName = async {
 let persist queueName destinationPath = async {
     let queuePath = getQueuePath queueName
     Util.IO.File.copy queuePath destinationPath }
+
+let rec periodicPersistence queueNames destinationDirPath (timeSpan: System.TimeSpan) = async {
+    let sleepTime = timeSpan.TotalMilliseconds |> int
+    do! Async.Sleep sleepTime
+    queueNames
+    |> Seq.map(persist destinationDirPath)
+    |> Async.Parallel
+    |> Async.RunSynchronously
+    |> ignore
+    do! periodicPersistence queueNames destinationDirPath timeSpan }
