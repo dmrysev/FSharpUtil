@@ -1,7 +1,14 @@
 module Util.Test.File
 
+open Util.IO.Path
 open NUnit.Framework
 open FsUnit
+
+let outputDirPath = Util.IO.Directory.generateTemporaryDirectory()
+
+[<TearDown>]
+let tearDown() =
+    Util.IO.Directory.delete outputDirPath
 
 [<Test>]
 let ``Pop first line must return first line and delete it from the file``() =
@@ -17,3 +24,10 @@ let ``Pop first line must return first line and delete it from the file``() =
     // ASSERT
     popedLine |> should equal "line 1"
     existingLines |> should equal ["line 2"; "line 3"]
+
+[<Test>]
+let ``Create file must correctly dispose resources``() =
+    let filePath = outputDirPath/"file.txt"
+    Util.IO.File.create (filePath)
+    (fun () -> System.IO.File.WriteAllLines(filePath, ["line 1"])) |> should not' (throw typeof<System.IO.IOException>)
+

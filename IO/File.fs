@@ -6,7 +6,8 @@ open System.IO
 let create (filePath: string) =
     let dirPath = System.IO.Path.GetDirectoryName filePath
     System.IO.Directory.CreateDirectory dirPath |> ignore
-    File.Create filePath |> ignore
+    use fileStream = File.Create filePath
+    ()
 
 let appendLine (filePath: string) (text: string) =
     if not <| exists filePath then create filePath
@@ -59,3 +60,6 @@ let popFirstLine (filePath: string) =
     File.Delete(filePath)
     File.Move(tempFile, filePath)
     firstLine
+
+let exists (filePath: string) =
+    System.IO.File.Exists filePath
