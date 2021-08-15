@@ -35,57 +35,68 @@ let rec enqueueAsync queueName (message: string) = async {
     let queuePath = getQueuePath queueName
     let headPath = getQueueHeadPath queueName
     let tailPath = getQueueTailPath queuePath
-    // printfn "Enqueue %s " message
+
     use tailStream = new System.IO.FileStream(tailPath, FileMode.Open, FileAccess.ReadWrite, FileShare.None)
     tailStream.Lock(0 |> int64, 0 |> int64)
     use tailReader = new StreamReader(tailStream)
-    let tailIndex = tailReader.ReadLine() |> int
+    let! tailIndex = tailReader.ReadLineAsync() |> Async.AwaitTask
+    let tailIndex = tailIndex |> int
+
     let messagePath = getMessagePath queueName tailIndex
-    File.WriteAllText(messagePath, message)
+    use messageStream = new System.IO.FileStream(messagePath, FileMode.Create, FileAccess.ReadWrite, FileShare.None)
+    use messageWriter = new StreamWriter(messageStream)
+    do! messageWriter.WriteAsync(message) |> Async.AwaitTask
+    // File.WriteAllText(messagePath, message)
+
     use headStream = new System.IO.FileStream(headPath, FileMode.Open, FileAccess.ReadWrite, FileShare.None)
     headStream.Lock(0 |> int64, 0 |> int64)
     use headReader = new StreamReader(headStream)
-    let headIndex = headReader.ReadLine() |> int
+    let! headIndex = headReader.ReadLineAsync() |> Async.AwaitTask
+    let headIndex = headIndex |> int
+
     let newTailIndex =
         if tailIndex + 1 > queueMaxSize then 0
         else tailIndex + 1
     if newTailIndex = headIndex then 
-        // headReader.Close()
-        // headStream.Close()
-        // tailStream.Close()
         failwithf "Max size message limit reached in queue %s" queueName
-    tailStream.Seek(0 |> int64, SeekOrigin.Begin)
+    let newPos = tailStream.Seek(0 |> int64, SeekOrigin.Begin)
     use tailWriter = new StreamWriter(tailStream)
-    tailWriter.WriteLine(newTailIndex)
+    do! tailWriter.WriteLineAsync(newTailIndex |> string) |> Async.AwaitTask
 }
 
 let rec dequeueAsync queueName = async {
     let queuePath = getQueuePath queueName
     let headPath = getQueueHeadPath queueName
     let tailPath = getQueueTailPath queuePath
+
     use headStream = new System.IO.FileStream(headPath, FileMode.Open, FileAccess.ReadWrite, FileShare.None)
     headStream.Lock(0 |> int64, 0 |> int64)
     use headReader = new StreamReader(headStream)
-    let headIndex = headReader.ReadLine() |> int
+    let! headIndex = headReader.ReadLineAsync() |> Async.AwaitTask
+    let headIndex = headIndex |> int
+
     let messagePath = getMessagePath queueName headIndex
     if not <| (Util.IO.Path.exists messagePath) then return ""
     else 
-        let message = System.IO.File.ReadAllText(messagePath)
+        use messageStream = new System.IO.FileStream(messagePath, FileMode.Open, FileAccess.Read, FileShare.None)
+        use messageReader = new StreamReader(messageStream)
+        let! message = messageReader.ReadToEndAsync() |> Async.AwaitTask
+        // let message = System.IO.File.ReadAllText(messagePath)
         Util.IO.File.delete messagePath
+
         use tailStream = new System.IO.FileStream(tailPath, FileMode.Open, FileAccess.ReadWrite, FileShare.None)
         tailStream.Lock(0 |> int64, 0 |> int64)
         use tailReader = new StreamReader(tailStream)
-        let tailIndex = tailReader.ReadLine() |> int        
+        let! tailIndex = tailReader.ReadLineAsync() |> Async.AwaitTask 
+        let tailIndex = tailIndex |> int
+
         let newHeadIndex =
             if headIndex = tailIndex then headIndex
             elif headIndex + 1 > queueMaxSize then 0
             else headIndex + 1
-        // printfn "tail %i" tailIndex
-        // printfn "head %i" headIndex
-        // printfn "new head %i" newHeadIndex
-        headStream.Seek(0 |> int64, SeekOrigin.Begin)
+        let newPos = headStream.Seek(0 |> int64, SeekOrigin.Begin)
         use headWriter = new StreamWriter(headStream)
-        headWriter.WriteLine(newHeadIndex)
+        do! headWriter.WriteLineAsync(newHeadIndex |> string) |> Async.AwaitTask
         return message
 }
 
