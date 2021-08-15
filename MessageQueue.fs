@@ -7,7 +7,7 @@ exception QueueLimitReachedException of string
 
 let uid = "cb045d48-ac03-4dc2-b5d2-565aa32e70af"
 let tempDir = Util.Environment.SpecialFolder.temporary/uid
-let queueLimit = 12
+let queueLimit = 1000
 
 let getQueuePath queueName =
     tempDir/queueName
@@ -78,6 +78,9 @@ let rec enqueueAsync queueName (message: string) = async {
             do! Async.Sleep 50
             do! enqueueAsync queueName message }
 
+let enqueue queueName (message: string) =
+    enqueueAsync queueName message |> Async.RunSynchronously
+
 let unsafeDequeueAsync queueName = async {
     let queuePath = getQueuePath queueName
 
@@ -125,6 +128,8 @@ let rec dequeueAsync queueName = async {
             do! Async.Sleep 50
             return! dequeueAsync queueName }
 
+let dequeue queueName =
+    dequeueAsync queueName |> Async.RunSynchronously
 
 let hasMessagesAsync queueName = async {
     let queuePath = getQueuePath queueName
