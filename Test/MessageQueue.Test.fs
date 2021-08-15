@@ -13,7 +13,7 @@ let setUp() =
     resetQueue queue2
 
 [<Test>]
-let ``MessageQueue must satisfy all FIFO property``() =
+let ``MessageQueue must satisfy FIFO property``() =
     enqueue queue1 "message 1"
     enqueue queue1 "message 2"
     enqueue queue1 "message 3"
