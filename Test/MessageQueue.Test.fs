@@ -42,3 +42,9 @@ let ``MessageQueue must support async operations for same queue``() =
         |> Async.RunSynchronously
 
     result |> should equivalent ["message 1"; "message 2"]
+
+[<Test>]
+let ``MessageQueue must support sub directory queue names``() =
+    resetQueue "A/B/queue_1"
+    enqueue "A/B/queue_1" "message 1"
+    dequeue "A/B/queue_1" |> should equal "message 1"
