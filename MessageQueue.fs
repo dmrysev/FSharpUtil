@@ -3,9 +3,11 @@ module Util.MessageQueue
 open Util.IO.Path
 open System.IO
 
+exception QueueLimitReachedException of string
+
 let uid = "cb045d48-ac03-4dc2-b5d2-565aa32e70af"
 let tempDir = Util.Environment.SpecialFolder.temporary/uid
-let queueMaxSize = 1200
+let queueLimit = 12
 
 let getQueuePath queueName =
     tempDir/queueName
@@ -31,8 +33,13 @@ let resetQueue queueName =
     let tailPath = getQueueTailPath queueName
     System.IO.File.WriteAllText(tailPath, "0")
 
-let rec enqueueAsync queueName (message: string) = async {
+let unsafeEnqueueAsync queueName (message: string) = async {
     let queuePath = getQueuePath queueName
+
+    let lockPath = queuePath/"lock"
+    use lockStream = new System.IO.FileStream(lockPath, FileMode.Create, FileAccess.ReadWrite, FileShare.None)
+    lockStream.Lock(0 |> int64, 0 |> int64)
+
     let headPath = getQueueHeadPath queueName
     let tailPath = getQueueTailPath queuePath
 
@@ -46,7 +53,6 @@ let rec enqueueAsync queueName (message: string) = async {
     use messageStream = new System.IO.FileStream(messagePath, FileMode.Create, FileAccess.ReadWrite, FileShare.None)
     use messageWriter = new StreamWriter(messageStream)
     do! messageWriter.WriteAsync(message) |> Async.AwaitTask
-    // File.WriteAllText(messagePath, message)
 
     use headStream = new System.IO.FileStream(headPath, FileMode.Open, FileAccess.ReadWrite, FileShare.None)
     headStream.Lock(0 |> int64, 0 |> int64)
@@ -55,17 +61,30 @@ let rec enqueueAsync queueName (message: string) = async {
     let headIndex = headIndex |> int
 
     let newTailIndex =
-        if tailIndex + 1 > queueMaxSize then 0
+        if tailIndex + 1 > queueLimit then 0
         else tailIndex + 1
     if newTailIndex = headIndex then 
-        failwithf "Max size message limit reached in queue %s" queueName
+        let errorMessage = sprintf "Queue limit reached in queue %s" queueName
+        raise (QueueLimitReachedException(errorMessage))
     let newPos = tailStream.Seek(0 |> int64, SeekOrigin.Begin)
     use tailWriter = new StreamWriter(tailStream)
-    do! tailWriter.WriteLineAsync(newTailIndex |> string) |> Async.AwaitTask
-}
+    do! tailWriter.WriteLineAsync(newTailIndex |> string) |> Async.AwaitTask }
 
-let rec dequeueAsync queueName = async {
+let rec enqueueAsync queueName (message: string) = async {
+    try
+        do! unsafeEnqueueAsync queueName message
+    with
+        | :? System.IO.IOException -> // this is expected in multi process case
+            do! Async.Sleep 50
+            do! enqueueAsync queueName message }
+
+let unsafeDequeueAsync queueName = async {
     let queuePath = getQueuePath queueName
+
+    let lockPath = queuePath/"lock"
+    use lockStream = new System.IO.FileStream(lockPath, FileMode.Create, FileAccess.ReadWrite, FileShare.None)
+    lockStream.Lock(0 |> int64, 0 |> int64)
+    
     let headPath = getQueueHeadPath queueName
     let tailPath = getQueueTailPath queuePath
 
@@ -81,7 +100,6 @@ let rec dequeueAsync queueName = async {
         use messageStream = new System.IO.FileStream(messagePath, FileMode.Open, FileAccess.Read, FileShare.None)
         use messageReader = new StreamReader(messageStream)
         let! message = messageReader.ReadToEndAsync() |> Async.AwaitTask
-        // let message = System.IO.File.ReadAllText(messagePath)
         Util.IO.File.delete messagePath
 
         use tailStream = new System.IO.FileStream(tailPath, FileMode.Open, FileAccess.ReadWrite, FileShare.None)
@@ -92,16 +110,21 @@ let rec dequeueAsync queueName = async {
 
         let newHeadIndex =
             if headIndex = tailIndex then headIndex
-            elif headIndex + 1 > queueMaxSize then 0
+            elif headIndex + 1 > queueLimit then 0
             else headIndex + 1
         let newPos = headStream.Seek(0 |> int64, SeekOrigin.Begin)
         use headWriter = new StreamWriter(headStream)
         do! headWriter.WriteLineAsync(newHeadIndex |> string) |> Async.AwaitTask
-        return message
-}
+        return message }
 
-// let dequeueAsync queueName = async {
-//     return "line" }
+let rec dequeueAsync queueName = async {
+    try
+        return! unsafeDequeueAsync queueName
+    with
+        | :? System.IO.IOException -> // this is expected in multi process case
+            do! Async.Sleep 50
+            return! dequeueAsync queueName }
+
 
 let hasMessagesAsync queueName = async {
     let queuePath = getQueuePath queueName
