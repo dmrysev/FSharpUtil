@@ -12,3 +12,5 @@ let replace (oldValue: string) (newValue: string) (text: string) = text.Replace(
 
 let split (separator: string) (text: string) = 
     text.Split([|separator|], System.StringSplitOptions.None)
+
+let toLower (str: string) = str.ToLower()
