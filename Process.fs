@@ -25,3 +25,15 @@ let execute (command: string) =
     p.WaitForExit()
     System.IO.File.Delete temporaryScriptFile
     output
+
+let executeNoOutput (command: string) =
+    let guid = System.Guid.NewGuid().ToString()
+    let temporaryScriptFile = "/tmp/" + guid + ".sh"
+    System.IO.File.WriteAllText(temporaryScriptFile, command)
+    let p = new System.Diagnostics.Process()
+    p.StartInfo.RedirectStandardOutput <- true
+    p.StartInfo.UseShellExecute <- false
+    p.StartInfo.FileName <- "/bin/bash"
+    p.StartInfo.Arguments <- temporaryScriptFile
+    p.Start() |> ignore    
+    p.WaitForExit()

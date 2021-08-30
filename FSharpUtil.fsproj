@@ -11,6 +11,7 @@
     <Compile Include="Environment.fs" />
     <Compile Include="IO/File.fs" />
     <Compile Include="IO/Directory.fs" />
+    <Compile Include="IO/Clipboard.fs" />
     <Compile Include="MessageQueue.fs" />
     <Compile Include="Math.fs" />
     <Compile Include="Regex.fs" />
