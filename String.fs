@@ -17,3 +17,6 @@ let toLower (str: string) = str.ToLower()
 
 let removeLastCharacter (str: string) (count: int) =
     str.Remove(str.Length - count)
+
+let contains (subString: string) (str: string) =
+    str.Contains(subString)
