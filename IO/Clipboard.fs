@@ -1,6 +1,6 @@
 module Util.IO.Clipboard
 
-let add (value: string) =
+let set (value: string) =
     let command = sprintf "echo '%s' | xclip -sel clip" value
     Util.Process.executeNoOutput(command)
 
