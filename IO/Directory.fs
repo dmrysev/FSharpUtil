@@ -19,3 +19,6 @@ let generateTemporaryDirectory() =
     let tempDir = Util.Environment.SpecialFolder.temporary
     let guid = System.Guid.NewGuid().ToString()
     tempDir/guid
+
+let exists (dirPath: string) =
+    System.IO.Directory.Exists dirPath

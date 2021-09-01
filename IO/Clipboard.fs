@@ -5,5 +5,6 @@ let add (value: string) =
     Util.Process.executeNoOutput(command)
 
 let get () =
-    Util.Process.execute("xclip -o -sel clip")
-    |> Util.String.replace "\n" ""
+    let clipboardString = Util.Process.execute("xclip -o -sel clip")
+    if clipboardString.EndsWith("\n") then Util.String.removeLastCharacter clipboardString 1
+    else clipboardString

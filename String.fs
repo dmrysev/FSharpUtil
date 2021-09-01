@@ -14,3 +14,6 @@ let split (separator: string) (text: string) =
     text.Split([|separator|], System.StringSplitOptions.None)
 
 let toLower (str: string) = str.ToLower()
+
+let removeLastCharacter (str: string) (count: int) =
+    str.Remove(str.Length - count)
