@@ -8,3 +8,6 @@ let get () =
     let clipboardString = Util.Process.execute("xclip -o -sel clip")
     if clipboardString.EndsWith("\n") then Util.String.removeLastCharacter clipboardString 1
     else clipboardString
+
+let clear () =
+    set("")
