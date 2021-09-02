@@ -20,3 +20,6 @@ let removeLastCharacter (str: string) (count: int) =
 
 let contains (subString: string) (str: string) =
     str.Contains(subString)
+
+let startsWith (subString: string) (str: string) =
+    str.StartsWith(subString)
