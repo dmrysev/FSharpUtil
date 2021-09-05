@@ -15,7 +15,7 @@ let split (separator: string) (text: string) =
 
 let toLower (str: string) = str.ToLower()
 
-let removeLastCharacter (str: string) (count: int) =
+let removeLastCharacter (count: int) (str: string) =
     str.Remove(str.Length - count)
 
 let contains (subString: string) (str: string) =
@@ -23,3 +23,6 @@ let contains (subString: string) (str: string) =
 
 let startsWith (subString: string) (str: string) =
     str.StartsWith(subString)
+    
+let endsWith (subString: string) (str: string) =
+    str.EndsWith(subString)
