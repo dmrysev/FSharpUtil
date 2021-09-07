@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="Guid.fs" />
     <Compile Include="Async.fs" />
     <Compile Include="Process.fs" />
     <Compile Include="String.fs" />
@@ -23,6 +24,7 @@
     <Compile Include="Http.fs" />
     <Compile Include="HttpClient.fs" />
     <Compile Include="VersionControl.fs" />
+    <Compile Include="Service/MessageQueueMonitor.fs" />
   </ItemGroup>
 
   <ItemGroup>
