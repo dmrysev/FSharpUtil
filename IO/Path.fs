@@ -2,6 +2,22 @@ module Util.IO.Path
 
 let (/) path1 path2 = System.IO.Path.Combine(path1, path2)
 
+type FilePath = FilePath of string with
+    static member value (FilePath v) = v
+    member this.Value = FilePath.value this
+
+type DirectoryPath = DirectoryPath of string with
+    static member value (DirectoryPath v) = v
+    member this.Value = DirectoryPath.value this
+
+    static member (/+) (path1: DirectoryPath, path2: DirectoryPath) = 
+        let combined = System.IO.Path.Combine(path1.Value, path2.Value)
+        DirectoryPath combined
+
+    static member (/+) (path1: DirectoryPath, path2: FilePath) = 
+        let combined = System.IO.Path.Combine(path1.Value, path2.Value)
+        FilePath combined
+
 let fixFileName (fileName: string) =
     let invalidChars = ['/'; '<'; '>'; ':'; '"'; '/'; '\\'; '|'; '?'; '*']
     Util.String.strip invalidChars fileName
