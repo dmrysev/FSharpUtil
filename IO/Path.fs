@@ -2,13 +2,23 @@ module Util.IO.Path
 
 let (/) path1 path2 = System.IO.Path.Combine(path1, path2)
 
-type FilePath = FilePath of string with
-    static member value (FilePath v) = v
-    member this.Value = FilePath.value this
+type FilePath(str: string) =
+    let value' = 
+        if str = "" then raise (System.ArgumentException("Path can't be empty"))
+        str
 
-type DirectoryPath = DirectoryPath of string with
-    static member value (DirectoryPath v) = v
-    member this.Value = DirectoryPath.value this
+    member this.Value = value'
+
+    static member value (dirPath: FilePath) = dirPath.Value
+
+type DirectoryPath(str: string) =
+    let value' = 
+        if str = "" then raise (System.ArgumentException("Path can't be empty"))
+        str
+
+    member this.Value = value'
+
+    static member value (dirPath: DirectoryPath) = dirPath.Value
 
     static member (/+) (path1: DirectoryPath, path2: DirectoryPath) = 
         let combined = System.IO.Path.Combine(path1.Value, path2.Value)
