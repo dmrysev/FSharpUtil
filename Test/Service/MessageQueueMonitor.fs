@@ -15,7 +15,7 @@ let ``If message queue monitor service is running, adding a message to message q
     Async.Start(task, taskCancellation.Token)
 
     // ACT
-    Util.MessageQueue.enqueue config.QueueName "test message"
+    Util.Test.startMessageQueueSpamming config.QueueName "test message"
     let message = events.NewMessage |> Async.AwaitEvent |> Async.RunSynchronously
 
     // ASSERT

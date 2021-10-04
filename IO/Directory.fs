@@ -2,23 +2,31 @@ module Util.IO.Directory
 
 open Util.IO.Path
 
-let empty (folderPath: string) =
-    System.IO.Directory.GetFileSystemEntries(folderPath).Length = 0
+let empty (dirPath: DirectoryPath) =
+    System.IO.Directory.GetFileSystemEntries(dirPath.Value).Length = 0
 
-let countFiles (folderPath: string) =
-    System.IO.Directory.EnumerateFiles folderPath |> Seq.length
+let exists (dirPath: DirectoryPath) =
+    System.IO.Directory.Exists dirPath.Value
 
-let create dirPath = 
-    System.IO.Directory.CreateDirectory dirPath |> ignore
+let countFiles (dirPath: DirectoryPath) =
+    System.IO.Directory.EnumerateFiles dirPath.Value |> Seq.length
 
-let delete dirPath = 
-    if Util.IO.Path.exists dirPath then
-        System.IO.Directory.Delete(dirPath, true)
+let create (dirPath: DirectoryPath) = 
+    System.IO.Directory.CreateDirectory dirPath.Value |> ignore
+
+let delete (dirPath: DirectoryPath) =  
+    if dirPath |> exists then 
+        System.IO.Directory.Delete(dirPath.Value, true)
 
 let generateTemporaryDirectory() =
     let tempDir = Util.Environment.SpecialFolder.temporary
-    let guid = System.Guid.NewGuid().ToString()
-    tempDir/guid
+    let dirName = DirectoryName (Util.Guid.generate())
+    let dirPath = tempDir/dirName
+    create dirPath
+    dirPath
 
-let exists (dirPath: string) =
-    System.IO.Directory.Exists dirPath
+let listFiles (dirPath: DirectoryPath) = 
+    System.IO.Directory.EnumerateFiles dirPath.Value
+    |> Seq.map FilePath
+
+let copy (source: DirectoryPath) (destination: DirectoryPath) = raise (System.NotImplementedException "")

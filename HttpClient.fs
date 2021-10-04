@@ -1,5 +1,7 @@
 module Util.HttpClient
 
+open Util.Http
+open Util.IO.Path
 open System.Net.Http
 open FSharp.Data
 open System.Threading
@@ -19,16 +21,16 @@ let initHttpClient () =
     let handler = new HttpClientHandler(UseCookies = false)
     new HttpClient(handler)
 
-let getContentWithHeader(httpClient: HttpClient) (headers: seq<string*string>) (url: string) =
+let getContentWithHeader(httpClient: HttpClient) (headers: seq<string*string>) (url: Url) =
     async {
-        let message = new HttpRequestMessage(System.Net.Http.HttpMethod.Get, url)
+        let message = new HttpRequestMessage(System.Net.Http.HttpMethod.Get, url.Value)
         headers |> Seq.iter message.Headers.Add
         use! response = httpClient.SendAsync(message, HttpCompletionOption.ResponseHeadersRead) |> Async.AwaitTask
         use response = response.EnsureSuccessStatusCode()
         return! response.Content.ReadAsStringAsync() |> Async.AwaitTask
     } |> Async.RunSynchronously   
 
-let getContent (httpClient: HttpClient) (url: string) =
+let getContent (httpClient: HttpClient) (url: Url) =
     getContentWithHeader httpClient [] url
 
 let parseHttpRequestErrorMessageStatusCode (errorMessage: string) =
@@ -37,25 +39,25 @@ let parseHttpRequestErrorMessageStatusCode (errorMessage: string) =
 let parseStatusCode (httpRequestException: System.Net.Http.HttpRequestException) =
     parseHttpRequestErrorMessageStatusCode httpRequestException.Message
 
-let loadHtml (httpClient: HttpClient) (url: string) = 
+let loadHtml (httpClient: HttpClient) (url: Url) = 
     getContent httpClient url
     |> HtmlDocument.Parse
 
-let loadHtmlWithHeaders (httpClient: HttpClient) (headers: seq<string*string>) (url: string) =
+let loadHtmlWithHeaders (httpClient: HttpClient) (headers: seq<string*string>) (url: Url) =
     getContentWithHeader httpClient headers url
     |> HtmlDocument.Parse
 
-let downloadBinaryWithHeaders (httpClient: HttpClient) (headers: seq<string*string>) (url: string) (outputFilePath: string) =
-    let dirPath = System.IO.Path.GetDirectoryName(outputFilePath)
-    System.IO.Directory.CreateDirectory dirPath |> ignore
+let downloadBinaryWithHeaders (httpClient: HttpClient) (headers: seq<string*string>) (url: Url) (outputFilePath: FilePath) =
+    outputFilePath.DirectoryPath
+    |> Util.IO.Directory.create
     async {
-        let message = new HttpRequestMessage(System.Net.Http.HttpMethod.Get, url)
+        let message = new HttpRequestMessage(System.Net.Http.HttpMethod.Get, url.Value)
         headers |> Seq.iter message.Headers.Add
         use! response = httpClient.SendAsync(message, HttpCompletionOption.ResponseHeadersRead) |> Async.AwaitTask
         use! streamToReadFrom = response.Content.ReadAsStreamAsync() |> Async.AwaitTask
-        use streamToWriteTo = System.IO.File.Open(outputFilePath, System.IO.FileMode.Create)
+        use streamToWriteTo = System.IO.File.Open(outputFilePath.Value, System.IO.FileMode.Create)
         return! streamToReadFrom.CopyToAsync(streamToWriteTo) |> Async.AwaitTask
-    } |> Async.RunSynchronously        
+    } |> Async.RunSynchronously
 
-let downloadBinary (httpClient: HttpClient) (url: string) (outputFilePath: string) =
+let downloadBinary (httpClient: HttpClient) (url: Url) (outputFilePath: FilePath) =
     downloadBinaryWithHeaders httpClient [] url outputFilePath

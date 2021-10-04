@@ -9,6 +9,7 @@
     <Compile Include="Async.fs" />
     <Compile Include="Process.fs" />
     <Compile Include="String.fs" />
+    <Compile Include="Regex.fs" />
     <Compile Include="IO/Path.fs" />
     <Compile Include="Environment.fs" />
     <Compile Include="IO/File.fs" />
@@ -16,7 +17,6 @@
     <Compile Include="IO/Clipboard.fs" />
     <Compile Include="MessageQueue.fs" />
     <Compile Include="Math.fs" />
-    <Compile Include="Regex.fs" />
     <Compile Include="StringMatch.fs" />
     <Compile Include="Seq.fs" />
     <Compile Include="Retry.fs" />
@@ -25,6 +25,7 @@
     <Compile Include="HttpClient.fs" />
     <Compile Include="VersionControl.fs" />
     <Compile Include="Service/MessageQueueMonitor.fs" />
+    <Compile Include="Test.fs" />
   </ItemGroup>
 
   <ItemGroup>

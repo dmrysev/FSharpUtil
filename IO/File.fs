@@ -3,20 +3,23 @@ module Util.IO.File
 open Util.IO.Path
 open System.IO
 
-let create (filePath: string) =
-    let dirPath = System.IO.Path.GetDirectoryName filePath
-    System.IO.Directory.CreateDirectory dirPath |> ignore
-    use fileStream = File.Create filePath
+let create (filePath: FilePath) =
+    let dirPath = filePath.DirectoryPath
+    System.IO.Directory.CreateDirectory dirPath.Value |> ignore
+    use fileStream = File.Create filePath.Value
     ()
 
-let appendLine (filePath: string) (text: string) =
-    if not <| exists filePath then create filePath
-    use fileStream = File.Open(filePath, FileMode.Append)
+let appendLine (filePath: FilePath) (text: string) =
+    if not <| Util.IO.Path.FilePath.exists filePath then create filePath
+    use fileStream = File.Open(filePath.Value, FileMode.Append)
     use streamWriter = new StreamWriter(fileStream)
     streamWriter.WriteLine(text)
 
-let head (filePath: string) (linesCount: int) =
-    let command = sprintf "head -n %i %s" linesCount filePath
+let writeText (filePath: FilePath) (text: string) = System.IO.File.WriteAllText (filePath.Value, text)
+let writeLines (filePath: FilePath) (lines: seq<string>) = System.IO.File.WriteAllLines(filePath.Value, lines)
+
+let head (filePath: FilePath) (linesCount: int) =
+    let command = sprintf "head -n %i %s" linesCount filePath.Value
     let output = Util.Process.execute command
     output.Replace("\r", "").Split('\n')    
 
@@ -25,41 +28,45 @@ let tail (filePath: string) (linesCount: int) =
     let output = Util.Process.execute command
     output.Replace("\r", "").Split('\n')
 
-let firstLine(filePath: string) = head filePath 1 |> Seq.head 
-
+let firstLine(filePath: FilePath) = head filePath 1 |> Seq.head 
 let lastLine (filePath: string) = tail filePath 1 |> Seq.head
 
-let move (sourceFilePath: string) (destinationPath: string) =
+let move (sourceFilePath: FilePath) (destinationPath: string) =
     if destinationPath |> exists && destinationPath |> isDirectory then
-        let fileName = System.IO.Path.GetFileName sourceFilePath
+        let destinationPath = DirectoryPath destinationPath
+        let fileName = sourceFilePath.FileName
         let destinationFilePath = destinationPath/fileName
-        System.IO.File.Move(sourceFilePath, destinationFilePath)
+        System.IO.File.Move(sourceFilePath.Value, destinationFilePath.Value)
     else
-        let dirPath = System.IO.Path.GetDirectoryName destinationPath
-        System.IO.Directory.CreateDirectory dirPath |> ignore
-        System.IO.File.Move(sourceFilePath, destinationPath)
+        let destinationPath = FilePath destinationPath
+        let dirPath = destinationPath.DirectoryPath
+        System.IO.Directory.CreateDirectory dirPath.Value |> ignore
+        System.IO.File.Move (sourceFilePath.Value, destinationPath.Value)
 
-let delete path =
-    System.IO.File.Delete path
+let delete (path: FilePath) = System.IO.File.Delete path.Value
 
-let copy sourceFilePath destinationPath = 
+let copy (sourceFilePath: FilePath) destinationPath = 
     if destinationPath |> exists && destinationPath |> isDirectory then
-        let fileName = System.IO.Path.GetFileName sourceFilePath
+        let destinationPath = DirectoryPath destinationPath
+        let fileName = sourceFilePath.FileName
         let destinationFilePath = destinationPath/fileName
-        System.IO.File.Copy(sourceFilePath, destinationFilePath, true)
+        System.IO.File.Copy(sourceFilePath.Value, destinationFilePath.Value, true)
     else
-        System.IO.File.Copy(sourceFilePath, destinationPath, true)
+        System.IO.File.Copy(sourceFilePath.Value, destinationPath, true)
 
-let popFirstLine (filePath: string) = 
-    let firstLine = firstLine filePath
-    let tempFile = Path.GetTempFileName()
-    let linesToKeep = 
-        File.ReadLines filePath
-        |> Seq.skip 1
-    File.WriteAllLines(tempFile, linesToKeep)
-    File.Delete(filePath)
-    File.Move(tempFile, filePath)
-    firstLine
+let exists (filePath: FilePath) = System.IO.File.Exists filePath.Value
+let readAllLines (filePath: FilePath) = System.IO.File.ReadAllLines filePath.Value
 
-let exists (filePath: string) =
-    System.IO.File.Exists filePath
+let isSymbolicLink (filePath: FilePath) =
+    let pathInfo = System.IO.FileInfo filePath.Value
+    pathInfo.Attributes.HasFlag(System.IO.FileAttributes.ReparsePoint)  
+
+let getSymbolicLinkRealPath (filePath: FilePath) =
+    if not (isSymbolicLink filePath) then raise (System.ArgumentException "Not a symbolic link")
+    let command = sprintf "readlink -f '%s'" filePath.Value
+    let output = Util.Process.execute command
+    output.Replace("\n", "")
+
+let createSymbolicLink (sourcePath: FilePath) (destinationPath: string) =
+    let command = sprintf "ln -s \"%s\" \"%s\"" sourcePath.Value destinationPath
+    Util.Process.execute command |> ignore

@@ -4,24 +4,74 @@ open Util.IO.Path
 open NUnit.Framework
 open FsUnit
 
-let tempDir = Util.IO.Directory.generateTemporaryDirectory()
+let tempDirPath = Util.IO.Directory.generateTemporaryDirectory()
 
 [<SetUp>]
 let setUp() =
-    Util.IO.Directory.create tempDir
+    ()
 
 [<TearDown>]
 let tearDown() =
-    Util.IO.Directory.delete tempDir
+    Util.IO.Directory.delete tempDirPath
 
 [<Test>]
-let ``Check if file or directory exists``() =
+let ``Check if file exists``() =
     // ARRANGE
-    Util.IO.File.create (tempDir/"file_1")
-    Util.IO.Directory.create (tempDir/"dir_1")
+    Util.IO.File.create (tempDirPath/FileName "file_1")
 
     // ACT & ASSERT
-    Util.IO.Path.exists (tempDir/"file_1") |> should be True
-    Util.IO.Path.exists (tempDir/"dir_1") |> should be True
-    Util.IO.Path.exists (tempDir/"file_2") |> should be False
-    Util.IO.Path.exists (tempDir/"dir_2") |> should be False
+    tempDirPath/FileName "file_1" |> Util.IO.File.exists |> should be True
+    tempDirPath/FileName "file_2" |> Util.IO.File.exists |> should be False
+
+[<Test>]
+let ``Check if directory exists``() =
+    // ARRANGE
+    Util.IO.Directory.create (tempDirPath/DirectoryName "dir_1")
+
+    // ACT & ASSERT
+    tempDirPath/DirectoryName "dir_1" |> Util.IO.Directory.exists |> should be True
+    tempDirPath/DirectoryName "dir_2" |> Util.IO.Directory.exists  |> should be False
+
+[<Test>]
+let ``If input string is invalid, initializing file name, must raise argument exception``() =
+    (fun () -> FileName "" |> ignore) |> should throw typeof<System.ArgumentException>
+    (fun () -> FileName "/file.txt" |> ignore) |> should throw typeof<System.ArgumentException>
+    (fun () -> FileName "Dir/file.txt" |> ignore) |> should throw typeof<System.ArgumentException>
+
+[<Test>]
+let ``If input string is invalid, initializing directory name, must raise argument exception``() =
+    (fun () -> DirectoryName "" |> ignore) |> should throw typeof<System.ArgumentException>
+    (fun () -> DirectoryName "/A" |> ignore) |> should throw typeof<System.ArgumentException>
+    (fun () -> DirectoryName "A/" |> ignore) |> should throw typeof<System.ArgumentException>
+    (fun () -> DirectoryName "/A/" |> ignore) |> should throw typeof<System.ArgumentException>
+    (fun () -> DirectoryName "/A/B" |> ignore) |> should throw typeof<System.ArgumentException>
+
+[<Test>]
+let ``Setting file name extension, must accept string with and without dot char``() =
+    FileName "file" |> FileName.setExtension "txt" |> should equal (FileName "file.txt")
+    FileName "file" |> FileName.setExtension ".txt" |> should equal (FileName "file.txt")
+
+[<Test>]
+let ``Initializing directory path, must fix string path``() =
+    (DirectoryPath "/A/B").Value |> should equal "/A/B"
+    (DirectoryPath "/A/B/").Value |> should equal "/A/B/"
+
+[<Test>]
+let ``Join together different path types``() =
+    DirectoryPath "/A/B"/DirectoryPath "C" |> should equal (DirectoryPath "/A/B/C")
+    DirectoryPath "/A/B/"/DirectoryPath "C" |> should equal (DirectoryPath "/A/B/C")
+    DirectoryPath "/A/B"/DirectoryPath "C/D" |> should equal (DirectoryPath "/A/B/C/D")
+    DirectoryPath "/A/B"/DirectoryName "C" |> should equal (DirectoryPath "/A/B/C")
+    DirectoryPath "/A/B/"/DirectoryName "C" |> should equal (DirectoryPath "/A/B/C")
+    DirectoryPath "/A/B"/FilePath "C/File.txt" |> should equal (FilePath "/A/B/C/File.txt")
+    DirectoryPath "/A/B/"/FilePath "C/File.txt" |> should equal (FilePath "/A/B/C/File.txt")
+    DirectoryPath "/A/B"/FileName "File.txt" |> should equal (FilePath "/A/B/File.txt")
+    DirectoryPath "/A/B/"/FileName "File.txt" |> should equal (FilePath "/A/B/File.txt")
+
+[<Test>]
+let ``Trying to join with absolute directroy path, must throw argument exception``() =
+    (fun () -> DirectoryPath "/A"/DirectoryPath "/C" |> ignore) |> should throw typeof<System.ArgumentException>
+
+[<Test>]
+let ``Trying to join with absolute file path, must throw argument exception``() =
+    (fun () -> DirectoryPath "/A"/FilePath "/B/file.txt" |> ignore) |> should throw typeof<System.ArgumentException>

@@ -4,9 +4,9 @@ open Util.IO.Path
 open System.Runtime.InteropServices
 
 module SpecialFolder =
-    let home = System.Environment.GetFolderPath(System.Environment.SpecialFolder.UserProfile)
-    let applicationData = home/".local/share"
-    let temporary = "/tmp"
+    let home = DirectoryPath (System.Environment.GetFolderPath(System.Environment.SpecialFolder.UserProfile))
+    let applicationData = home/DirectoryPath ".local/share"
+    let temporary = DirectoryPath "/tmp"
 
 module OS =
     let isLinux() =

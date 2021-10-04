@@ -1,69 +1,120 @@
 module Util.IO.Path
 
-let (/) path1 path2 = System.IO.Path.Combine(path1, path2)
-
-type FilePath(str: string) =
-    let value' = 
-        if str = "" then raise (System.ArgumentException("Path can't be empty"))
-        str
-
-    member this.Value = value'
-
-    static member value (dirPath: FilePath) = dirPath.Value
-
-type DirectoryPath(str: string) =
-    let value' = 
-        if str = "" then raise (System.ArgumentException("Path can't be empty"))
-        str
-
-    member this.Value = value'
-
-    static member value (dirPath: DirectoryPath) = dirPath.Value
-
-    static member (/+) (path1: DirectoryPath, path2: DirectoryPath) = 
-        let combined = System.IO.Path.Combine(path1.Value, path2.Value)
-        DirectoryPath combined
-
-    static member (/+) (path1: DirectoryPath, path2: FilePath) = 
-        let combined = System.IO.Path.Combine(path1.Value, path2.Value)
-        FilePath combined
-
-let fixFileName (fileName: string) =
-    let invalidChars = ['/'; '<'; '>'; ':'; '"'; '/'; '\\'; '|'; '?'; '*']
-    Util.String.strip invalidChars fileName
-
-let fixPath (url: string) =
-    if url.EndsWith "/" then url.Remove(url.Length - 1, 1)
-    else url
+let invalidCharacters = ['/'; '<'; '>'; ':'; '"'; '/'; '\\'; '|'; '?'; '*']
 
 let exists (path: string) = 
     System.IO.Directory.Exists path || System.IO.File.Exists path
-
-let findAvailablePathWithAppendix (filePath: string) = 
-    let rec findAppendix number =
-        let newFilePath = sprintf "%s_%i" filePath number
-        if exists newFilePath
-        then findAppendix (number + 1)
-        else newFilePath
-    findAppendix 1
 
 let isDirectory path =
     let attributes = System.IO.File.GetAttributes path
     attributes.HasFlag(System.IO.FileAttributes.Directory)
 
-let isSymbolicLink path =
-    let pathInfo = System.IO.FileInfo path
-    pathInfo.Attributes.HasFlag(System.IO.FileAttributes.ReparsePoint)    
+let directorySparator = System.IO.Path.DirectorySeparatorChar
+let isAbsolute path = path |> Util.String.startsWith (string directorySparator)
 
-let getSymbolicLinkRealPath path =
-    let command = sprintf "readlink -f '%s'" path
-    let output = Util.Process.execute command
-    output.Replace("\n", "")
+type FileName (str: string) = 
+    let path = 
+        if str = "" then raise (System.ArgumentException "File name can't be empty")
+        if str.Contains(string directorySparator) then raise (System.ArgumentException "File name can't contain directory separator")
+        str
+    member this.Value = path
+    static member value (fileName: FileName) = fileName.Value
 
-let createSymbolicLink (sourcePath: string) destinationPath =
-    let command = sprintf "ln -s \"%s\" \"%s\"" sourcePath destinationPath
-    Util.Process.execute command |> ignore
+    member this.Extension = System.IO.Path.GetExtension this.Value
+    member this.WithoutExtension = this.Value |> Util.String.remove this.Extension |> FileName
+    member this.Remove (toRemove: string) = this.Value |> Util.String.remove toRemove |> FileName
 
-let replaceFileName (fileName: string) (newFileName: string) =
-    let extension = System.IO.Path.GetExtension fileName
-    newFileName + extension
+    override this.GetHashCode () = this.Value.GetHashCode()
+    override this.Equals other =
+        match other with
+        | :? FileName as d -> this.Value = d.Value
+        | _ -> false
+
+module FileName =
+    let setExtension (extension: string) (fileName: FileName) =
+        let extension = extension |> Util.String.remove "."
+        FileName (sprintf "%s.%s" fileName.Value extension)
+
+    let remove (toRemove: string) (fileName: FileName) = fileName.Remove toRemove
+    let withoutExtension (fileName: FileName) = fileName.WithoutExtension
+
+type DirectoryName(str: string) =
+    let path = 
+        if str = "" then raise (System.ArgumentException "Directory name can't be empty")
+        if str.Contains(string directorySparator) then raise (System.ArgumentException "Directory name can't contain path separator")
+        str
+    member this.Value = path
+    static member value (dirName: DirectoryName) = dirName.Value
+    override this.GetHashCode () = this.Value.GetHashCode()
+    override this.Equals other =
+        match other with
+        | :? DirectoryName as d -> this.Value = d.Value
+        | _ -> false
+
+type FilePath(str: string) =
+    let path = 
+        if str = "" then raise (System.ArgumentException "Path can't be empty")
+        str
+    member this.Value = path
+    static member value (dirPath: FilePath) = dirPath.Value
+
+    static member exists (filePath: FilePath) = System.IO.File.Exists filePath.Value
+
+    static member IsAbsolute (filePath: FilePath) = filePath.Value |> isAbsolute
+    member this.isAbsolute = this |> FilePath.IsAbsolute
+
+    member this.FileName = path |> System.IO.Path.GetFileName |> FileName
+
+    override this.GetHashCode () = this.Value.GetHashCode()
+    override this.Equals other =
+        match other with
+        | :? FilePath as d -> this.Value = d.Value
+        | _ -> false
+
+type DirectoryPath(str: string) =
+    let path = 
+        if str = "" then raise (System.ArgumentException "Path can't be empty")
+        str
+
+    member this.Value = path
+    static member value (dirPath: DirectoryPath) = dirPath.Value
+
+    static member IsAbsolute (dirPath: DirectoryPath) =  dirPath.Value |> isAbsolute
+    member this.isAbsolute = this |> DirectoryPath.IsAbsolute
+
+    static member (/) (path1: DirectoryPath, path2: DirectoryPath) = 
+        if path2.isAbsolute then raise (System.ArgumentException "Can't join with absolute path")
+        let combined = System.IO.Path.Combine(path1.Value, path2.Value)
+        DirectoryPath combined
+
+    static member (/) (path1: DirectoryPath, path2: DirectoryName) = 
+        let combined = System.IO.Path.Combine(path1.Value, path2.Value)
+        DirectoryPath combined
+
+    static member (/) (path1: DirectoryPath, path2: FilePath) = 
+        if path2.isAbsolute then raise (System.ArgumentException "Can't join with absolute path")
+        let combined = System.IO.Path.Combine(path1.Value, path2.Value)
+        FilePath combined
+
+    static member (/) (path1: DirectoryPath, path2: FileName) = 
+        let combined = System.IO.Path.Combine(path1.Value, path2.Value)
+        FilePath combined
+
+    member this.DirectoryName = System.IO.Path.GetFileName path |> DirectoryName
+
+    override this.GetHashCode () = this.Value.GetHashCode()
+    override this.Equals other =
+        match other with
+        | :? DirectoryPath as d -> this.Value = d.Value
+        | _ -> false
+
+type FilePath with
+    static member directoryPath (filePath: FilePath) =
+        let dirPath = System.IO.Path.GetDirectoryName filePath.Value
+        DirectoryPath dirPath
+
+    member this.DirectoryPath = FilePath.directoryPath this
+
+module DirectoryPath =
+    let directoryName (dirPath: DirectoryPath) = dirPath.DirectoryName
+
