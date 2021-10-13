@@ -24,18 +24,24 @@ let getMessageFilePath queueName index =
     let fileName = index |> string |> FileName
     queueDirPath/fileName
 
-let initQueue queueName = 
+let isQueueInitialized queueName = 
+    let queueDirPath = getQueueDirPath queueName
+    let headFilePath = getQueueHeadFilePath queueName
+    let tailFilePath = getQueueTailFilePath queueName
+    if Util.IO.Directory.exists queueDirPath &&
+       Util.IO.File.exists headFilePath &&
+       Util.IO.File.exists tailFilePath then true
+    else false
+
+let resetQueue queueName = 
+    let queueDirPath = getQueueDirPath queueName
+    Util.IO.Directory.delete queueDirPath
     let queueDirPath = getQueueDirPath queueName
     Util.IO.Directory.create queueDirPath
     let headFilePath = getQueueHeadFilePath queueName
     Util.IO.File.writeText headFilePath "0"
     let tailFilePath = getQueueTailFilePath queueName
-    Util.IO.File.writeText tailFilePath "0"    
-
-let resetQueue queueName = 
-    let queueDirPath = getQueueDirPath queueName
-    Util.IO.Directory.delete queueDirPath
-    initQueue queueName
+    Util.IO.File.writeText tailFilePath "0" 
 
 let unsafeEnqueueAsync queueName (message: string) = async {
     let queueDirPath = getQueueDirPath queueName
