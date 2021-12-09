@@ -11,7 +11,8 @@ let extractInt text = Regex.Match(text, @"\d+").Value |> int
 let replace (oldValue: string) (newValue: string) (text: string) = text.Replace(oldValue, newValue)
 
 let remove (toRemove: string) (text: string) =
-    text.Replace(toRemove, "")
+    if toRemove = "" then text
+    else text.Replace(toRemove, "")
 
 let split (separator: string) (text: string) = 
     text.Split([|separator|], System.StringSplitOptions.None)
