@@ -57,14 +57,10 @@ type FilePath(str: string) =
         str
     member this.Value = path
     static member value (dirPath: FilePath) = dirPath.Value
-
     static member exists (filePath: FilePath) = System.IO.File.Exists filePath.Value
-
     static member IsAbsolute (filePath: FilePath) = filePath.Value |> isAbsolute
     member this.isAbsolute = this |> FilePath.IsAbsolute
-
     member this.FileName = path |> System.IO.Path.GetFileName |> FileName
-
     override this.GetHashCode () = this.Value.GetHashCode()
     override this.Equals other =
         match other with
@@ -112,8 +108,11 @@ type FilePath with
     static member directoryPath (filePath: FilePath) =
         let dirPath = System.IO.Path.GetDirectoryName filePath.Value
         DirectoryPath dirPath
-
     member this.DirectoryPath = FilePath.directoryPath this
+    member this.WithNewFileNamePreserveExtension newName =
+        let extension = this.FileName.Extension
+        let newFileName = FileName newName |> FileName.setExtension extension
+        this.DirectoryPath/newFileName
 
 module DirectoryPath =
     let directoryName (dirPath: DirectoryPath) = dirPath.DirectoryName
