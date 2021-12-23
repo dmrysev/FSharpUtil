@@ -12,6 +12,9 @@ let isDirectory path =
 let directorySparator = System.IO.Path.DirectorySeparatorChar
 let isAbsolute path = path |> Util.String.startsWith (string directorySparator)
 
+let realPath (path: string) =
+    Util.Process.execute $"realpath {path}"
+
 type FileName (str: string) = 
     let path = 
         if str = "" then raise (System.ArgumentException "File name can't be empty")

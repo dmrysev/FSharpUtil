@@ -24,7 +24,8 @@ let execute (command: string) =
     let output = reader.ReadToEnd()
     p.WaitForExit()
     System.IO.File.Delete temporaryScriptFile
-    output
+    if output.EndsWith("\n") then output.Remove(output.Length - 1)
+    else output
 
 let executeNoOutput (command: string) =
     let guid = System.Guid.NewGuid().ToString()
@@ -37,3 +38,4 @@ let executeNoOutput (command: string) =
     p.StartInfo.Arguments <- temporaryScriptFile
     p.Start() |> ignore    
     p.WaitForExit()
+    System.IO.File.Delete temporaryScriptFile

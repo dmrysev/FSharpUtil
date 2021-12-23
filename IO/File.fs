@@ -70,3 +70,9 @@ let getSymbolicLinkRealPath (filePath: FilePath) =
 let createSymbolicLink (sourcePath: FilePath) (destinationPath: string) =
     let command = sprintf "ln -s \"%s\" \"%s\"" sourcePath.Value destinationPath
     Util.Process.execute command |> ignore
+
+let openWithDefaultApplication (filePath: FilePath) =
+    if Util.Environment.OS.isLinux() then
+        Util.Process.executeNoOutput $"xdg-open {filePath.Value} &"
+    else raise (System.NotImplementedException())
+        
