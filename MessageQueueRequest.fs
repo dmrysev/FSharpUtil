@@ -1,10 +1,7 @@
 module Util.MessageQueueRequest
 
 open Util.Service.MessageQueueMonitor
-open Newtonsoft.Json
-
-let toJson message = JsonConvert.SerializeObject message
-let fromJson<'a> json = JsonConvert.DeserializeObject<'a> json
+open Util.Json
 
 type WriteRequest<'a> (queueName) =
     let requestQueueName = $"{queueName}/request"
