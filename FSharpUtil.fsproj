@@ -25,6 +25,7 @@
     <Compile Include="HttpClient.fs" />
     <Compile Include="VersionControl.fs" />
     <Compile Include="Service/MessageQueueMonitor.fs" />
+    <Compile Include="MessageQueueRequest.fs" />
     <Compile Include="Test.fs" />
     <Compile Include="Excel/Reader.fs" />
     <Compile Include="Excel/Writer.fs" />
@@ -33,6 +34,7 @@
   <ItemGroup>
     <PackageReference Include="ExcelDataReader" Version="3.6.0" />
     <PackageReference Include="fsharp.data" Version="3.3.3" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
   </ItemGroup>
 
   <ItemGroup>
