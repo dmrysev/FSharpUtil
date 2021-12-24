@@ -41,7 +41,9 @@ let resetQueue queueName =
     let headFilePath = getQueueHeadFilePath queueName
     Util.IO.File.writeText headFilePath "0"
     let tailFilePath = getQueueTailFilePath queueName
-    Util.IO.File.writeText tailFilePath "0" 
+    Util.IO.File.writeText tailFilePath "0"
+
+let ensureQueueInitialized queueName = if not (queueName |> isQueueInitialized) then resetQueue queueName
 
 let unsafeEnqueueAsync queueName (message: string) = async {
     let queueDirPath = getQueueDirPath queueName
