@@ -3,8 +3,9 @@ module Util.MessageQueueRequest
 open Util.Service.MessageQueueMonitor
 open Util.Json
 
-type WriteRequest<'a> (queueName) =
+type WriteRequest<'a> (queueName, ?config: WriteRequestConfig) =
     let requestQueueName = $"{queueName}/request"
+    let config = defaultArg config { ListenerUpdareRate = System.TimeSpan.FromSeconds(1.0) }
     do Util.MessageQueue.ensureQueueInitialized requestQueueName
     member this.QueueName = requestQueueName
     member this.SendRequest message = message |> toJson |> Util.MessageQueue.enqueue requestQueueName
@@ -17,7 +18,7 @@ type WriteRequest<'a> (queueName) =
         let events = { WriteEvents.NewRequest = newRequestEvent.Publish  }
         let messageQueueConfig = {
             Util.Service.MessageQueueMonitor.Config.QueueName = requestQueueName
-            UpdateRate = System.TimeSpan.FromSeconds(1.0)
+            UpdateRate = config.ListenerUpdareRate
             ResetQueue = false }
         let task, messageQueueEvents = Util.Service.MessageQueueMonitor.init messageQueueConfig
         messageQueueEvents.NewMessage.Add(fun message -> 
@@ -25,6 +26,7 @@ type WriteRequest<'a> (queueName) =
             |> newRequestEvent.Trigger )
         (task, events)
 and WriteEvents<'a> = { NewRequest: IEvent<'a> }
+and WriteRequestConfig = { ListenerUpdareRate: System.TimeSpan }
 
 type Response<'a> (queueName) =
     let responseQueueName = $"{queueName}/response"
