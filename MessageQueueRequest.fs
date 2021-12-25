@@ -3,7 +3,7 @@ module Util.MessageQueueRequest
 open Util.Service.MessageQueueMonitor
 open Util.Json
 
-type WriteRequest<'a> (queueName, ?config: WriteRequestConfig) =
+type WriteRequest<'a> (queueName: string, ?config: WriteRequestConfig) =
     let requestQueueName = $"{queueName}/request"
     let config = defaultArg config { ListenerUpdareRate = System.TimeSpan.FromSeconds(1.0) }
     do Util.MessageQueue.ensureQueueInitialized requestQueueName
@@ -28,7 +28,34 @@ type WriteRequest<'a> (queueName, ?config: WriteRequestConfig) =
 and WriteEvents<'a> = { NewRequest: IEvent<'a> }
 and WriteRequestConfig = { ListenerUpdareRate: System.TimeSpan }
 
-type Response<'a> (queueName) =
+type ReadRequest<'a, 'b> (queueName: string, ?config: ReadRequestConfig) =
+    let requestQueueName = $"{queueName}/request"
+    let config = defaultArg config { ListenerUpdareRate = System.TimeSpan.FromSeconds(1.0) }
+    do Util.MessageQueue.ensureQueueInitialized requestQueueName
+    member this.QueueName = requestQueueName
+    member this.SendRequest message = 
+        message |> toJson |> Util.MessageQueue.enqueue requestQueueName
+        Response(queueName, config)
+    member this.ReadRequest () =
+        let message = Util.MessageQueue.dequeue requestQueueName
+        if message <> "" then message |> fromJson<'a> |> Some
+        else None
+    member this.SendResponse (message: 'b) = message |> toJson |> Util.MessageQueue.enqueue $"{queueName}/response"
+    member this.Subscribe () =
+        let newRequestEvent = new Event<'a>()
+        let events = { ReadEvents.NewRequest = newRequestEvent.Publish  }
+        let messageQueueConfig = {
+            Util.Service.MessageQueueMonitor.Config.QueueName = requestQueueName
+            UpdateRate = config.ListenerUpdareRate
+            ResetQueue = false }
+        let task, messageQueueEvents = Util.Service.MessageQueueMonitor.init messageQueueConfig
+        messageQueueEvents.NewMessage.Add(fun message -> 
+            let apiMetaData = fromJson message.Content
+            newRequestEvent.Trigger apiMetaData )
+        (task, events)
+and ReadEvents<'a> = { NewRequest: IEvent<'a> }
+and ReadRequestConfig = { ListenerUpdareRate: System.TimeSpan }
+and Response<'b> (queueName, config: ReadRequestConfig) =
     let responseQueueName = $"{queueName}/response"
     do Util.MessageQueue.ensureQueueInitialized responseQueueName
     member this.Subscribe () =
@@ -36,7 +63,7 @@ type Response<'a> (queueName) =
         let events = { ResponseEvents.NewResponse = newResponseEvent.Publish  }
         let messageQueueConfig = {
             Util.Service.MessageQueueMonitor.Config.QueueName = responseQueueName
-            UpdateRate = System.TimeSpan.FromSeconds(1.0)
+            UpdateRate = config.ListenerUpdareRate
             ResetQueue = false }
         let task, messageQueueEvents = Util.Service.MessageQueueMonitor.init messageQueueConfig
         messageQueueEvents.NewMessage.Add(fun message -> 
@@ -49,29 +76,3 @@ type Response<'a> (queueName) =
         Async.Start(task, taskCancellation.Token)
         Async.AwaitEvent events.NewResponse |> Async.RunSynchronously
 and ResponseEvents<'a> = { NewResponse: IEvent<'a> }
-
-type ReadRequest<'a, 'b> (queueName) =
-    let requestQueueName = $"{queueName}/request"
-    do Util.MessageQueue.ensureQueueInitialized requestQueueName
-    member this.QueueName = requestQueueName
-    member this.SendRequest message = 
-        message |> toJson |> Util.MessageQueue.enqueue requestQueueName
-        Response<'b>(queueName)
-    member this.ReadRequest () =
-        let message = Util.MessageQueue.dequeue requestQueueName
-        if message <> "" then message |> fromJson<'a> |> Some
-        else None
-    member this.SendResponse (message: 'b) = message |> toJson |> Util.MessageQueue.enqueue $"{queueName}/response"
-    member this.Subscribe () =
-        let newRequestEvent = new Event<'a>()
-        let events = { ReadEvents.NewRequest = newRequestEvent.Publish  }
-        let messageQueueConfig = {
-            Util.Service.MessageQueueMonitor.Config.QueueName = requestQueueName
-            UpdateRate = System.TimeSpan.FromSeconds(1.0)
-            ResetQueue = false }
-        let task, messageQueueEvents = Util.Service.MessageQueueMonitor.init messageQueueConfig
-        messageQueueEvents.NewMessage.Add(fun message -> 
-            let apiMetaData = fromJson message.Content
-            newRequestEvent.Trigger apiMetaData )
-        (task, events)
-and ReadEvents<'a> = { NewRequest: IEvent<'a> }
