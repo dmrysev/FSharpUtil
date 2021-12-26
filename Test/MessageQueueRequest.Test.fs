@@ -16,9 +16,7 @@ let ``Write request must be handled``() =
     Async.Start(task, taskCancellation.Token)
 
     // ACT
-    Util.Test.startLoopAsync (fun _ -> async { 
-        do! request.SendRequestAsync("test message")
-        do! Async.Sleep 10 })
+    Async.Start(async { do! request.SendRequestAsync("test message") }, taskCancellation.Token)
     let message = events.NewRequest |> Async.AwaitEvent |> Async.RunSynchronously
 
     // ASSERT
@@ -27,7 +25,7 @@ let ``Write request must be handled``() =
 [<Test>]
 let ``Read request must be handled and recieve response``() =
     // ARRANGE
-    let config = { ReadRequestConfig.ListenerUpdareRate = System.TimeSpan.FromMilliseconds(100) }
+    let config = { ReadRequestConfig.ListenerUpdareRate = System.TimeSpan.FromMilliseconds(1) }
     let request = ReadRequest<string, string>("util/test/request/read_request_test", config)
     let task, events = request.Subscribe()
     events.NewRequest.Add(fun requestHandler -> 
@@ -46,7 +44,7 @@ let ``Read request must be handled and recieve response``() =
 [<Test>]
 let ``All read requests must be handled and recieve response``() =
     // ARRANGE
-    let config = { ReadRequestConfig.ListenerUpdareRate = System.TimeSpan.FromMilliseconds(100) }
+    let config = { ReadRequestConfig.ListenerUpdareRate = System.TimeSpan.FromMilliseconds(1) }
     let request = ReadRequest<string, string>("util/test/request/read_request_test", config)
     let task, events = request.Subscribe()
     events.NewRequest.Add(fun requestHandler -> 
