@@ -29,4 +29,8 @@ let listFiles (dirPath: DirectoryPath) =
     System.IO.Directory.EnumerateFiles dirPath.Value
     |> Seq.map FilePath
 
+let listDirectories (dirPath: DirectoryPath) =
+    System.IO.Directory.EnumerateDirectories dirPath.Value
+    |> Seq.map DirectoryPath
+
 let copy (source: DirectoryPath) (destination: DirectoryPath) = raise (System.NotImplementedException "")
