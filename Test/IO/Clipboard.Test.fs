@@ -5,7 +5,6 @@ open FsUnit
 
 [<TestCase("value 1")>]
 [<TestCase("value 1\nvalue 2")>]
-[<TestCase("value 1\nvalue 2\n")>]
 let ``If a value is set to clipboard, getting from clipboard, must return same value``(value: string) =
     Util.IO.Clipboard.set value
     Util.IO.Clipboard.get() |> should equal value

@@ -4,15 +4,22 @@ open Util.Service.MessageQueueMonitor
 open Util.Json
 
 type WriteRequest<'a> (queueName: string, ?config: WriteRequestConfig) =
+    let config = defaultArg config { 
+        ListenerUpdareRate = System.TimeSpan.FromSeconds(1.0)
+        ResetQueue = false }
     let requestQueueName = $"{queueName}/request"
-    let config = defaultArg config { ListenerUpdareRate = System.TimeSpan.FromSeconds(1.0) }
-    do Util.MessageQueue.ensureQueueInitialized requestQueueName
+    let parseMessage message =
+        if message <> "" then message |> fromJson |> Some
+        else None    
+    do if config.ResetQueue then Util.MessageQueue.resetQueue requestQueueName
+        else Util.MessageQueue.ensureQueueInitialized requestQueueName
     member this.QueueName = requestQueueName
     member this.SendRequest message = message |> toJson |> Util.MessageQueue.enqueue requestQueueName
-    member this.ReadRequest () =
-        let message = Util.MessageQueue.dequeue requestQueueName
-        if message <> "" then message |> fromJson |> Some
-        else None
+    member this.SendRequestAsync message = message |> toJson |> Util.MessageQueue.enqueueAsync requestQueueName
+    member this.ReadRequest () = Util.MessageQueue.dequeue requestQueueName |> parseMessage
+    member this.ReadRequestAsync () = async {
+        let! message = Util.MessageQueue.dequeueAsync requestQueueName
+        return parseMessage message }
     member this.Subscribe () =
         let newRequestEvent = new Event<'a>()
         let events = { WriteEvents.NewRequest = newRequestEvent.Publish  }
@@ -26,11 +33,13 @@ type WriteRequest<'a> (queueName: string, ?config: WriteRequestConfig) =
             |> newRequestEvent.Trigger )
         (task, events)
 and WriteEvents<'a> = { NewRequest: IEvent<'a> }
-and WriteRequestConfig = { ListenerUpdareRate: System.TimeSpan }
+and WriteRequestConfig = { 
+    ListenerUpdareRate: System.TimeSpan
+    ResetQueue: bool }
 
 type ReadRequest<'a, 'b> (queueName: string, ?config: ReadRequestConfig) =
-    let requestQueueName = $"{queueName}/request"
     let config = defaultArg config { ListenerUpdareRate = System.TimeSpan.FromSeconds(1.0) }
+    let requestQueueName = $"{queueName}/request"
     do Util.MessageQueue.ensureQueueInitialized requestQueueName
     member this.QueueName = requestQueueName
     member this.SendRequest message = 

@@ -1,6 +1,6 @@
 module Util.Test
 
-let startLoop func =
+let startLoopAsync func =
     let rec loop() = async {
         do! func()
         do! Async.Sleep 1
@@ -9,5 +9,5 @@ let startLoop func =
 
 let startMessageQueueSpamming queueName message =
     let func() = Util.MessageQueue.enqueueAsync queueName message
-    startLoop func
+    startLoopAsync func
     
