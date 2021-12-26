@@ -26,6 +26,7 @@
     <Compile Include="HttpClient.fs" />
     <Compile Include="VersionControl.fs" />
     <Compile Include="Service/MessageQueueMonitor.fs" />
+    <Compile Include="Service/MessageQueueTreeMonitor.fs" />
     <Compile Include="MessageQueueRequest.fs" />
     <Compile Include="Test.fs" />
     <Compile Include="Excel/Reader.fs" />

@@ -45,6 +45,17 @@ let resetQueue queueName =
 
 let ensureQueueInitialized queueName = if not (queueName |> isQueueInitialized) then resetQueue queueName
 
+let listQueueTree queueName =
+    let queueDirPath = getQueueDirPath queueName
+    if not (Util.IO.Directory.exists queueDirPath) then Seq.empty
+    else
+        Util.IO.Directory.listDirectories queueDirPath
+        |> Seq.map (fun x -> x.Value |> String.remove tempDirPath.Value |> String.removeFiratCharacter )
+
+let removeQueue queueName =
+    let queueDirPath = getQueueDirPath queueName
+    Util.IO.Directory.delete queueDirPath
+
 let unsafeEnqueueAsync queueName (message: string) = async {
     let queueDirPath = getQueueDirPath queueName
 
