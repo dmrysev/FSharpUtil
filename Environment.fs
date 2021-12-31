@@ -10,7 +10,7 @@ module SpecialFolder =
 
 module OS =
     let isLinux() =
-        System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
+        System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(OSPlatform.Linux)
 
 module BatteryInfo =
     type BatteryInfo = {
@@ -41,3 +41,13 @@ module BatteryInfo =
         |> Util.String.split "\n"
         |> Seq.map parseBatteryInfo
 
+module XServer =
+    let isRunning() = 
+        let script = """
+            if xset q &>/dev/null; then echo 1
+            else echo 0
+            fi
+        """
+        let result = Util.Process.execute script
+        if result = "1" then true
+        else false
