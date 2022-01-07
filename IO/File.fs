@@ -15,7 +15,10 @@ let appendLine (filePath: FilePath) (text: string) =
     use streamWriter = new StreamWriter(fileStream)
     streamWriter.WriteLine(text)
 
-let writeText (filePath: FilePath) (text: string) = System.IO.File.WriteAllText (filePath.Value, text)
+let writeText (filePath: FilePath) (text: string) = 
+    if not <| Util.IO.Path.FilePath.exists filePath then create filePath
+    System.IO.File.WriteAllText (filePath.Value, text)
+    
 let writeLines (filePath: FilePath) (lines: seq<string>) = System.IO.File.WriteAllLines(filePath.Value, lines)
 
 let head (filePath: FilePath) (linesCount: int) =

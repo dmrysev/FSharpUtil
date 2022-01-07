@@ -1,11 +1,12 @@
 module Util.Environment
 
 open Util.IO.Path
+open System
 open System.Runtime.InteropServices
 
 module SpecialFolder =
     let home = DirectoryPath (System.Environment.GetFolderPath(System.Environment.SpecialFolder.UserProfile))
-    let applicationData = home/DirectoryPath ".local/share"
+    let applicationData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) |> DirectoryPath
     let temporary = DirectoryPath "/tmp"
 
 module OS =
