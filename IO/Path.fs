@@ -12,8 +12,7 @@ let isDirectory path =
 let directorySparator = System.IO.Path.DirectorySeparatorChar
 let isAbsolute path = path |> Util.String.startsWith (string directorySparator)
 
-let realPath (path: string) =
-    Util.Process.execute $"realpath {path}"
+let realPath (path: string) = Util.Process.execute $"realpath '{path}'"
 
 type FileName (str: string) = 
     let path = 
