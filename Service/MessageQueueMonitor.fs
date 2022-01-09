@@ -13,18 +13,15 @@ type Events = {
 
 let init (config: Config) =
     if config.ResetQueue then Util.MessageQueue.resetQueue config.QueueName
-    let updateRateMs = config.UpdateRate.TotalMilliseconds |> int
     let newMessageEvent = new Event<Message>()
     let events = { Events.NewMessage = newMessageEvent.Publish }
-    let rec service () = async {
+    let task = Util.Service.Daemon.init config.UpdateRate (fun _ -> async {
         let! messageContent = Util.MessageQueue.dequeueAsync config.QueueName
         if messageContent <> "" then 
             let message = {
                 Message.Content = messageContent }
-            newMessageEvent.Trigger message
-        do! Async.Sleep updateRateMs
-        do! service() }
-    (service(), events)
+            newMessageEvent.Trigger message })
+    (task, events)
 
 let waitForMessage (config: Config) =
     let service, events = init config

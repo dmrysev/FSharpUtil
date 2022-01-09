@@ -14,10 +14,9 @@ and SubQueueMessage = { SubQueueName: string; Message: Message }
 
 let init (config: Config) =
     if config.ResetQueue then Util.MessageQueue.resetQueue config.QueueName
-    let updateRateMs = config.UpdateRate.TotalMilliseconds |> int
     let newMessageEvent = new Event<SubQueueMessage>()
     let events = { Events.NewMessage = newMessageEvent.Publish }
-    let rec service () = async {
+    let task = Util.Service.Daemon.init config.UpdateRate (fun _ -> async {
         Util.MessageQueue.listQueueTree config.QueueName
         |> Seq.map(fun subQueue -> async {
             let! messageContent = Util.MessageQueue.dequeueAsync subQueue
@@ -28,10 +27,8 @@ let init (config: Config) =
                 newMessageEvent.Trigger subQueueMessage } )
         |> Async.Parallel
         |> Async.RunSynchronously
-        |> ignore
-        do! Async.Sleep updateRateMs
-        do! service() }
-    (service(), events)
+        |> ignore } )
+    (task, events)
 
 let waitForMessage (config: Config) =
     let service, events = init config
