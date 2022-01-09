@@ -50,7 +50,7 @@ let listQueueTree queueName =
     if not (Util.IO.Directory.exists queueDirPath) then Seq.empty
     else
         Util.IO.Directory.listDirectories queueDirPath
-        |> Seq.map (fun x -> x.Value |> String.remove tempDirPath.Value |> String.removeFiratCharacter )
+        |> Seq.map (fun x -> x.Value |> String.remove tempDirPath.Value |> String.removeFirstCharacter )
 
 let removeQueue queueName =
     let queueDirPath = getQueueDirPath queueName

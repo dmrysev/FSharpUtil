@@ -15,10 +15,7 @@ type Url (url: string) =
     member this.FileName = this.Value |> System.IO.Path.GetFileName |> FileName
 
     static member value (url: Url) = url.Value
-
-    static member fix (url: string) =
-        if url |> Util.String.endsWith "/" then url |> Util.String.removeLastCharacter 1
-        else url
+    static member fix (url: string) = url |> Util.String.removeLastCharacterIfEquals "/"
 
     static member (/) (urlPath1: Url, urlPath2: Url) = 
         let combined = sprintf "%s/%s" urlPath1.Value urlPath2.Value

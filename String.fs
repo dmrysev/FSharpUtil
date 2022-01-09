@@ -5,11 +5,20 @@ let extractInt text = Regex.Match(text, @"\d+").Value |> int
 let replace (oldValue: string) (newValue: string) (text: string) = text.Replace(oldValue, newValue)
 let split (separator: string) (text: string) = text.Split([|separator|], System.StringSplitOptions.None)
 let toLower (str: string) = str.ToLower()
-let removeLastCharacter (count: int) (str: string) = str.Remove(str.Length - count)
-let removeFiratCharacter (str: string) = str.Remove(0, 1)
+let removeLastCharacters (count: int) (str: string) = str.Remove(str.Length - count)
+let removeLastCharacter (str: string) = str.Remove(str.Length - 1)
+let removeFirstCharacter (str: string) = str.Remove(0, 1)
 let contains (subString: string) (str: string) = str.Contains(subString)
 let startsWith (subString: string) (str: string) = str.StartsWith(subString)
 let endsWith (subString: string) (str: string) = str.EndsWith(subString)
+
+let removeFirstCharacterIfEquals (subString: string) (str: string) =
+    if str |> startsWith subString then str |> removeFirstCharacter
+    else str
+
+let removeLastCharacterIfEquals (subString: string) (str: string) =
+    if str |> endsWith subString then str |> removeLastCharacter
+    else str
 
 let strip chars str =
     Seq.fold(fun (str: string) chr ->
