@@ -59,6 +59,7 @@ let copy (sourceFilePath: FilePath) destinationPath =
 
 let exists (filePath: FilePath) = System.IO.File.Exists filePath.Value
 let readAllLines (filePath: FilePath) = System.IO.File.ReadAllLines filePath.Value
+let readAllText (filePath: FilePath) = System.IO.File.ReadAllText filePath.Value
 
 let isSymbolicLink (filePath: FilePath) =
     let pathInfo = System.IO.FileInfo filePath.Value
