@@ -26,8 +26,7 @@ type WriteRequest<'a> (queueName: string, ?config: WriteRequestConfig) =
         let events = { WriteEvents.NewRequest = newRequestEvent.Publish  }
         let messageQueueConfig = {
             Util.Service.MessageQueueMonitor.Config.QueueName = requestQueueName
-            UpdateRate = config.ListenerUpdareRate
-            ResetQueue = false }
+            UpdateRate = config.ListenerUpdareRate }
         let task, messageQueueEvents = Util.Service.MessageQueueMonitor.init messageQueueConfig
         messageQueueEvents.NewMessage.Add(fun message -> 
             fromJson message.Content
@@ -81,8 +80,7 @@ and ReadResponseHandler (queueName, recieverId, config: ReadRequestConfig) =
         let events = { ResponseEvents.NewResponse = newResponseEvent.Publish  }
         let messageQueueConfig = {
             Util.Service.MessageQueueMonitor.Config.QueueName = responseQueueName
-            UpdateRate = config.ListenerUpdareRate
-            ResetQueue = false }
+            UpdateRate = config.ListenerUpdareRate }
         let task, messageQueueEvents = Util.Service.MessageQueueMonitor.init messageQueueConfig
         messageQueueEvents.NewMessage.Add(fun message -> 
             fromJson message.Content
