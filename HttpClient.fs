@@ -6,11 +6,12 @@ open System.Net.Http
 open FSharp.Data
 open System.Threading
 
-let withRetryOnHttpRequestFail (delay: System.TimeSpan) (maximumAttempts: int) func =
+let withRetryOnHttpRequestFail (delay: System.TimeSpan) (maximumAttempts: int) func onError =
     let rec tryRun(attempt: int) =
         try func()
         with 
         | :? System.Net.Http.HttpRequestException as error ->
+            onError error
             if attempt = maximumAttempts then raise error
             printfn "Error %s. Attempt %i. Will try again in %A" error.Message attempt delay
             Thread.Sleep delay
