@@ -9,8 +9,8 @@ let ``If message queue monitor service is running, adding a message to message q
     // ARRANGE
     let config = {
         Util.Service.MessageQueueMonitor.Config.QueueName = Util.Guid.generate()
-        UpdateRate = System.TimeSpan.FromMilliseconds(1.0)
-        ResetQueue = true }
+        UpdateRate = System.TimeSpan.FromMilliseconds(1.0) }
+    Util.MessageQueue.resetQueue config.QueueName
     let task, events = Util.Service.MessageQueueMonitor.init config
     use taskCancellation = new Util.Async.ScopedCancellationTokenSource()
     Async.Start(task, taskCancellation.Token)

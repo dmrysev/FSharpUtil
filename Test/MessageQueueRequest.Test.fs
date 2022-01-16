@@ -4,6 +4,10 @@ open Util.MessageQueueRequest
 open NUnit.Framework
 open FsUnit
 
+type UnionMessage = 
+| FieldA of string
+| FieldB of int
+
 [<Test>]
 let ``Write request must be handled``() =
     // ARRANGE
@@ -21,6 +25,27 @@ let ``Write request must be handled``() =
 
     // ASSERT
     message |> should equal "test message"
+
+[<Test>]
+let ``Write request must be handled if message is union type``() =
+    // ARRANGE
+    let config = { 
+        WriteRequestConfig.ListenerUpdareRate = System.TimeSpan.FromMilliseconds(1)
+        ResetQueue = true }
+    let request = WriteRequest<UnionMessage>("util/test/request/write_request_union_type_test", config)
+    let task, events = request.Subscribe()
+    use taskCancellation = new Util.Async.ScopedCancellationTokenSource()
+    Async.Start(task, taskCancellation.Token)
+
+    // ACT
+    Async.Start(async { do! request.SendRequestAsync(UnionMessage.FieldA "test message") }, taskCancellation.Token)
+    let message = events.NewRequest |> Async.AwaitEvent |> Async.RunSynchronously
+
+    // ASSERT
+    message |> should be (ofCase<@ FieldA @>)
+    match message with
+    | FieldA str -> str |> should equal "test message"
+    | FieldB _ -> ()
 
 [<Test>]
 let ``Read request must be handled and recieve response``() =
