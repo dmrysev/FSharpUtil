@@ -19,6 +19,10 @@ let getQueueTailFilePath queueName =
     let queueDirPath = getQueueDirPath queueName
     queueDirPath/FileName "tail"
 
+let getQueueLockFilePath queueName = 
+    let queueDirPath = getQueueDirPath queueName
+    queueDirPath/FileName "lock"
+
 let getMessageFilePath queueName index =
     let queueDirPath = getQueueDirPath queueName
     let fileName = index |> string |> FileName
@@ -56,16 +60,35 @@ let removeQueue queueName =
     let queueDirPath = getQueueDirPath queueName
     Util.IO.Directory.delete queueDirPath
 
-let unsafeEnqueueAsync queueName (message: string) = async {
-    let queueDirPath = getQueueDirPath queueName
-
-    let lockFilePath = queueDirPath/FileName "lock"
+let countMessagesAsync queueName = async {
+    let lockFilePath = getQueueLockFilePath queueName
     use lockStream = new System.IO.FileStream(lockFilePath.Value, FileMode.Create, FileAccess.ReadWrite, FileShare.None)
     lockStream.Lock(0 |> int64, 0 |> int64)
 
     let headFilePath = getQueueHeadFilePath queueName
-    let tailFilePath = getQueueTailFilePath queueName
+    use headStream = new System.IO.FileStream(headFilePath.Value, FileMode.Open, FileAccess.ReadWrite, FileShare.None)
+    headStream.Lock(0 |> int64, 0 |> int64)
+    use headReader = new StreamReader(headStream)
+    let! headIndex = headReader.ReadLineAsync() |> Async.AwaitTask
+    let headIndex = headIndex |> int
 
+    let tailFilePath = getQueueTailFilePath queueName 
+    use tailStream = new System.IO.FileStream(tailFilePath.Value, FileMode.Open, FileAccess.ReadWrite, FileShare.None)
+    tailStream.Lock(0 |> int64, 0 |> int64)
+    use tailReader = new StreamReader(tailStream)
+    let! tailIndex = tailReader.ReadLineAsync() |> Async.AwaitTask
+    let tailIndex = tailIndex |> int
+
+    return System.Math.Abs(headIndex - tailIndex) }
+
+let countMessages queueName = countMessagesAsync queueName |> Async.RunSynchronously
+
+let unsafeEnqueueAsync queueName (message: string) = async {
+    let lockFilePath = getQueueLockFilePath queueName
+    use lockStream = new System.IO.FileStream(lockFilePath.Value, FileMode.Create, FileAccess.ReadWrite, FileShare.None)
+    lockStream.Lock(0 |> int64, 0 |> int64)
+
+    let tailFilePath = getQueueTailFilePath queueName
     use tailStream = new System.IO.FileStream(tailFilePath.Value, FileMode.Open, FileAccess.ReadWrite, FileShare.None)
     tailStream.Lock(0 |> int64, 0 |> int64)
     use tailReader = new StreamReader(tailStream)
@@ -77,6 +100,7 @@ let unsafeEnqueueAsync queueName (message: string) = async {
     use messageWriter = new StreamWriter(messageStream)
     do! messageWriter.WriteAsync(message) |> Async.AwaitTask
 
+    let headFilePath = getQueueHeadFilePath queueName
     use headStream = new System.IO.FileStream(headFilePath.Value, FileMode.Open, FileAccess.ReadWrite, FileShare.None)
     headStream.Lock(0 |> int64, 0 |> int64)
     use headReader = new StreamReader(headStream)
