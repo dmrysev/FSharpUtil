@@ -39,6 +39,9 @@
     <PackageReference Include="ExcelDataReader" Version="3.6.0" />
     <PackageReference Include="fsharp.data" Version="3.3.3" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="DotNetTor" Version="2.3.3" />
+    <PackageReference Include="HttpToSocks5Proxy" Version="1.4.0" />
+    <PackageReference Include="Selenium.WebDriver" Version="4.0.0" />
   </ItemGroup>
 
   <ItemGroup>
