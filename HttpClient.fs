@@ -9,7 +9,8 @@ open System.Net.Http
 open MihaZupan
 open OpenQA.Selenium.Firefox
 
-type Events = { HttpError: IEvent<System.Net.Http.HttpRequestException> }
+type Events = { HttpError: IEvent<HttpErrorDetails> }
+and HttpErrorDetails = { Error: System.Net.Http.HttpRequestException; Attempt: int }
 
 type HttpConfig = { 
     Headers:  seq<string * string> option
@@ -37,22 +38,22 @@ let withRetryOnHttpRequestFail (delay: System.TimeSpan) (maximumAttempts: int) f
     tryRun(1)
 
 let loadHtmlAsync (httpClient: HttpClient) (config: HttpConfig) (url: Url) =
-    let httpErrorEvent = Event<System.Net.Http.HttpRequestException>()
-    let events: Events = { HttpError = httpErrorEvent.Publish }
+    let httpErrorEvent = Event<HttpErrorDetails>()
+    let events = { Events.HttpError = httpErrorEvent.Publish }
     let task = async {
+        let message = new HttpRequestMessage(System.Net.Http.HttpMethod.Get, url.Value)
+        match config.Headers with
+        | Some headers -> headers |> Seq.iter message.Headers.Add
+        | None -> ()
         let rec tryRun(attempt: int) = async {
             try
-                let message = new HttpRequestMessage(System.Net.Http.HttpMethod.Get, url.Value)
-                match config.Headers with
-                | Some headers -> headers |> Seq.iter message.Headers.Add
-                | None -> ()
                 use! response = httpClient.SendAsync(message, HttpCompletionOption.ResponseHeadersRead) |> Async.AwaitTask
                 use response = response.EnsureSuccessStatusCode()
                 let! content = response.Content.ReadAsStringAsync() |> Async.AwaitTask
                 return content |> HtmlDocument.Parse
             with 
             | :? System.Net.Http.HttpRequestException as error ->
-                httpErrorEvent.Trigger error
+                httpErrorEvent.Trigger { Error = error; Attempt = attempt }
                 if attempt = config.MaxRetriesOnHttpError then raise error
                 do! Util.Async.sleep config.HttpErrorRetryTimeout
                 return tryRun(attempt + 1) |> Async.RunSynchronously }
@@ -64,23 +65,23 @@ let loadHtml httpClient config url =
     task |> Async.RunSynchronously
 
 let downloadBinaryAsync (httpClient: HttpClient) (config: HttpConfig) (url: Url) (outputFilePath: FilePath) =  
-    let httpErrorEvent = Event<System.Net.Http.HttpRequestException>()
+    let httpErrorEvent = Event<HttpErrorDetails>()
     let events: Events = { HttpError = httpErrorEvent.Publish }
     let task = async {
+        outputFilePath.DirectoryPath |> Util.IO.Directory.create
+        let message = new HttpRequestMessage(System.Net.Http.HttpMethod.Get, url.Value)
+        match config.Headers with
+        | Some headers -> headers |> Seq.iter message.Headers.Add
+        | None -> ()
         let rec tryRun(attempt: int) = async {
             try
-                outputFilePath.DirectoryPath |> Util.IO.Directory.create
-                let message = new HttpRequestMessage(System.Net.Http.HttpMethod.Get, url.Value)
-                match config.Headers with
-                | Some headers -> headers |> Seq.iter message.Headers.Add
-                | None -> ()
                 use! response = httpClient.SendAsync(message, HttpCompletionOption.ResponseHeadersRead) |> Async.AwaitTask
                 use! streamToReadFrom = response.Content.ReadAsStreamAsync() |> Async.AwaitTask
                 use streamToWriteTo = System.IO.File.Open(outputFilePath.Value, System.IO.FileMode.Create)
                 return! streamToReadFrom.CopyToAsync(streamToWriteTo) |> Async.AwaitTask             
             with 
             | :? System.Net.Http.HttpRequestException as error ->
-                httpErrorEvent.Trigger error
+                httpErrorEvent.Trigger { Error = error; Attempt = attempt }
                 if attempt = config.MaxRetriesOnHttpError then raise error
                 do! Util.Async.sleep config.HttpErrorRetryTimeout
                 tryRun(attempt + 1) |> Async.RunSynchronously }
