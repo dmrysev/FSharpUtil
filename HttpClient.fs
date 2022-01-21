@@ -14,13 +14,11 @@ and HttpErrorDetails = { Error: System.Net.Http.HttpRequestException; Attempt: i
 
 type HttpConfig = { 
     Headers:  seq<string * string> option
-    UseTor: bool
     RetryOnHttpError: bool
     MaxRetriesOnHttpError: int
     HttpErrorRetryTimeout: System.TimeSpan }
 with static member Default = {
         HttpConfig.Headers = None
-        UseTor = false
         RetryOnHttpError = true
         MaxRetriesOnHttpError = 3
         HttpErrorRetryTimeout = System.TimeSpan.FromMinutes(1.0) }
@@ -36,6 +34,29 @@ let withRetryOnHttpRequestFail (delay: System.TimeSpan) (maximumAttempts: int) f
             Thread.Sleep delay
             tryRun(attempt + 1)
     tryRun(1)
+
+let getHtmlContentAsync (httpClient: HttpClient) (config: HttpConfig) (url: Url) =
+    let httpErrorEvent = Event<HttpErrorDetails>()
+    let events = { Events.HttpError = httpErrorEvent.Publish }
+    let task = async {
+        let rec tryRun(attempt: int) = async {
+            try
+                let message = new HttpRequestMessage(System.Net.Http.HttpMethod.Get, url.Value)
+                match config.Headers with
+                | Some headers -> headers |> Seq.iter message.Headers.Add
+                | None -> ()
+                use! response = httpClient.SendAsync(message, HttpCompletionOption.ResponseHeadersRead) |> Async.AwaitTask
+                use response = response.EnsureSuccessStatusCode()
+                let! content = response.Content.ReadAsStringAsync() |> Async.AwaitTask
+                return content
+            with 
+            | :? System.Net.Http.HttpRequestException as error ->
+                httpErrorEvent.Trigger { Error = error; Attempt = attempt }
+                if attempt = config.MaxRetriesOnHttpError then raise error
+                do! Util.Async.sleep config.HttpErrorRetryTimeout
+                return tryRun(attempt + 1) |> Async.RunSynchronously }
+        return tryRun(0) |> Async.RunSynchronously }
+    task, events
 
 let loadHtmlAsync (httpClient: HttpClient) (config: HttpConfig) (url: Url) =
     let httpErrorEvent = Event<HttpErrorDetails>()
