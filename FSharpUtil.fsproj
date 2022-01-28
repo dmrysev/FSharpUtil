@@ -32,6 +32,7 @@
     <Compile Include="Test.fs" />
     <Compile Include="Excel/Reader.fs" />
     <Compile Include="Excel/Writer.fs" />
+    <Compile Include="DataAccess/JsonFileDataAccess.fs" />
     <Compile Include="Reflection.fs" />
   </ItemGroup>
 
