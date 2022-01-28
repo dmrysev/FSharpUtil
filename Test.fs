@@ -15,4 +15,9 @@ let startMessageQueueSpamming queueName message =
     startLoopAsync func
 
 let downloadBinaryFake (url: Url) (outputFilePath: FilePath) = Util.IO.File.create outputFilePath
+
+type EventMonitor<'a>(event: IEvent<'a>) =
+    let mutable triggerCount = 0
+    do event.Add(fun _ -> triggerCount <- triggerCount + 1)
+    member this.TriggerCount = triggerCount
     
