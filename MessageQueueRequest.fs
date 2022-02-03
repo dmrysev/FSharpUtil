@@ -10,8 +10,9 @@ type WriteRequest<'a> (queueName: string, ?config: WriteRequestConfig) =
         ResetQueue = false }
     let requestQueueName = $"{queueName}/request"
     let parseMessage message =
-        if message <> "" then message |> fromJson |> Some
-        else None    
+        match message with
+        | Some message -> message |> fromJson |> Some
+        | None -> None    
     do if config.ResetQueue then Util.MessageQueue.resetQueue requestQueueName
         else Util.MessageQueue.ensureQueueInitialized requestQueueName
     member this.QueueName = requestQueueName

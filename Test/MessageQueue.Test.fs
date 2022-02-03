@@ -13,20 +13,29 @@ let setUp() =
     resetQueue queue2
 
 [<Test>]
+let ``Enqueue a message and then dequeue it back, must return the same message``() =
+    enqueue queue1 "message 1"
+    dequeue queue1 |> Option.isSome |> should be True
+
+[<Test>]
+let ``If no message was equeued, trying to dequeue, must return None``() =
+    dequeue queue1 |> Option.isNone |> should be True
+
+[<Test>]
 let ``Message queue must satisfy FIFO property``() =
     enqueue queue1 "message 1"
     enqueue queue1 "message 2"
     enqueue queue1 "message 3"
-    dequeue queue1 |> should equal "message 1"
-    dequeue queue1 |> should equal "message 2"
-    dequeue queue1 |> should equal "message 3"
+    dequeue queue1 |> Util.Option.ofSome |> should equal "message 1"
+    dequeue queue1 |> Util.Option.ofSome |> should equal "message 2"
+    dequeue queue1 |> Util.Option.ofSome |> should equal "message 3"
 
 [<Test>]
 let ``Message queue must support multiple queues``() =
     enqueue queue1 "message 1"
     enqueue queue2 "message 2"
-    dequeue queue1 |> should equal "message 1"
-    dequeue queue2 |> should equal "message 2"
+    dequeue queue1 |> Util.Option.ofSome |> should equal "message 1"
+    dequeue queue2 |> Util.Option.ofSome |> should equal "message 2"
 
 [<Test>]
 let ``Message queue must support async operations for same queue``() =
@@ -41,13 +50,13 @@ let ``Message queue must support async operations for same queue``() =
         |> Async.Parallel
         |> Async.RunSynchronously
 
-    result |> should equivalent ["message 1"; "message 2"]
+    result |> Seq.map Util.Option.ofSome |> should equivalent ["message 1"; "message 2"]
 
 [<Test>]
 let ``Message queue must support sub directory queue names``() =
     resetQueue "A/B/queue_1"
     enqueue "A/B/queue_1" "message 1"
-    dequeue "A/B/queue_1" |> should equal "message 1"
+    dequeue "A/B/queue_1" |> Util.Option.ofSome |> should equal "message 1"
 
 [<Test>]
 let ``Message queue count messages``() =

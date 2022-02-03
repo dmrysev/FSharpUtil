@@ -15,12 +15,14 @@ let init (config: Config) =
     let newMessageEvent = new Event<Message>()
     let events = { Events.NewMessage = newMessageEvent.Publish }
     let task = Util.Service.Daemon.init config.UpdateRate (fun _ -> async {
-        let! messageContent = Util.MessageQueue.dequeueAsync config.QueueName
-        if messageContent <> "" then 
-            let message = {
-                Message.Content = messageContent }
-            newMessageEvent.Trigger message })
-    (task, events)
+        let! result = Util.MessageQueue.dequeueAsync config.QueueName
+        match result with
+        | Some content ->
+            let message: Message = {
+                Content = content }
+            newMessageEvent.Trigger message
+        | None -> () })
+    task, events
 
 let waitForMessage (config: Config) =
     let service, events = init config

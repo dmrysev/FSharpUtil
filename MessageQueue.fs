@@ -145,7 +145,7 @@ let unsafeDequeueAsync queueName = async {
     let headIndex = headIndex |> int
 
     let messageFilePath = getMessageFilePath queueName headIndex
-    if not (Util.IO.File.exists messageFilePath) then return ""
+    if not (Util.IO.File.exists messageFilePath) then return None
     else 
         use messageStream = new System.IO.FileStream(messageFilePath.Value, FileMode.Open, FileAccess.Read, FileShare.None)
         use messageReader = new StreamReader(messageStream)
@@ -165,7 +165,7 @@ let unsafeDequeueAsync queueName = async {
         let newPos = headStream.Seek(0 |> int64, SeekOrigin.Begin)
         use headWriter = new StreamWriter(headStream)
         do! headWriter.WriteLineAsync(newHeadIndex |> string) |> Async.AwaitTask
-        return message }
+        return Some message }
 
 let rec dequeueAsync queueName = async {
     try

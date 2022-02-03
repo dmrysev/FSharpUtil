@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="Option.fs" />
     <Compile Include="Guid.fs" />
     <Compile Include="Async.fs" />
     <Compile Include="Process.fs" />

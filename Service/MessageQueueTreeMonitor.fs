@@ -19,12 +19,14 @@ let init (config: Config) =
     let task = Util.Service.Daemon.init config.UpdateRate (fun _ -> async {
         Util.MessageQueue.listQueueTree config.QueueName
         |> Seq.map(fun subQueue -> async {
-            let! messageContent = Util.MessageQueue.dequeueAsync subQueue
-            if messageContent <> "" then 
-                let subQueueMessage = {
-                    SubQueueMessage.SubQueueName = subQueue
-                    Message = { Message.Content = messageContent } }
-                newMessageEvent.Trigger subQueueMessage } )
+            let! result = Util.MessageQueue.dequeueAsync subQueue
+            match result with
+            | Some content ->
+                let message: SubQueueMessage = {
+                    SubQueueName = subQueue
+                    Message = { Message.Content = content } }
+                newMessageEvent.Trigger message
+            | None -> () })
         |> Async.Parallel
         |> Async.RunSynchronously
         |> ignore } )
