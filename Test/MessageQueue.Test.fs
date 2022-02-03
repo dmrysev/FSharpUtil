@@ -14,8 +14,13 @@ let setUp() =
 
 [<Test>]
 let ``Enqueue a message and then dequeue it back, must return the same message``() =
+    // ACT
     enqueue queue1 "message 1"
-    dequeue queue1 |> Option.isSome |> should be True
+    let result = dequeue queue1 
+
+    // ASSERT
+    result |> Option.isSome |> should be True
+    result.Value |> should equal "message 1"
 
 [<Test>]
 let ``If no message was equeued, trying to dequeue, must return None``() =
