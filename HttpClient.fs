@@ -5,7 +5,6 @@ open Util.IO.Path
 open FSharp.Data
 open System.Net.Http
 open System.Threading
-open System.Net.Http
 open MihaZupan
 open OpenQA.Selenium.Firefox
 

@@ -35,6 +35,7 @@
     <Compile Include="Excel/Writer.fs" />
     <Compile Include="DataAccess/JsonFileDataAccess.fs" />
     <Compile Include="Reflection.fs" />
+    <Compile Include="Compression.fs" />
   </ItemGroup>
 
   <ItemGroup>
