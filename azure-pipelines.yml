@@ -22,4 +22,4 @@ variables:
 steps:
 - script: echo building $(Build.BuildNumber) with ${{ parameters.image }}
 - script: echo running with condition
-  condition: contains(${{ parameters.GradleBuildTargets }}, ':Teams:assembleDevDebug')  
+  condition: contains(contains(parameters['GradleBuildTargets'], ':Teams:assembleDevDebug')  
