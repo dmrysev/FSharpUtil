@@ -13,13 +13,10 @@ parameters:
   - windows-latest
   - ubuntu-latest
   - macOS-latest
-# - name: GradleBuildTargets
-#   type: string
-#   default: ':Teams:assembleDevDebug :Teams:assembleDevDebugAndroidTest'
-pool: Default
-variables:
 - name: GradleBuildTargets
-  value: ':Teams:assembleDevDebug :Teams:assembleDevDebugAndroidTest'
+  type: string
+  default: ':Teams:assembleDevDebug :Teams:assembleDevDebugAndroidTest'
+pool: Default
 steps:
 - script: echo running with condition
-  condition: contains(variables['GradleBuildTargets'], ':Teams:assembleDevDebug')
+  condition: contains('${{ parameters.GradleBuildTargets }}', ':Teams:assembleDevDebug')
