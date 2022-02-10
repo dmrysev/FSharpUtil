@@ -24,6 +24,11 @@ steps:
   inputs:
     targetType: 'inline'
     script: |
-      # Write your PowerShell commands here.
-      
       Write-Host "Hello World"
+- task: PythonScript@0
+  inputs:
+    scriptSource: 'inline'
+    script: |
+      import sys
+      print(sys.argv[0])
+    arguments: 'hello'
