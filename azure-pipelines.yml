@@ -21,6 +21,5 @@ variables:
   buildConfiguration: 'Release'
 steps:
 - script: echo building $(Build.BuildNumber) with ${{ parameters.image }}
-- script: echo running from condition
-  condition: contains(${{ parameters.GradleBuildTargets }}, ':Teams:assembleDevDebug')
-  enabled: false
+- script: echo running with condition
+  condition: contains(${{ parameters.GradleBuildTargets }}, ':Teams:assembleDevDebug')  
