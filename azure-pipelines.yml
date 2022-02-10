@@ -13,8 +13,14 @@ parameters:
   - windows-latest
   - ubuntu-latest
   - macOS-latest
+- name: GradleBuildTargets
+  type: string
+  default: ':Teams:assembleDevDebug :Teams:assembleDevDebugAndroidTest'
 pool: Default
 variables:
   buildConfiguration: 'Release'
 steps:
 - script: echo building $(Build.BuildNumber) with ${{ parameters.image }}
+- script: echo building $(Build.BuildNumber) with ${{ parameters.image }}
+  condition: and(contains(parameters['GradleBuildTargets'], ':Teams:assembleDevDebug'))
+  enabled: false
