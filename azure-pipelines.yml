@@ -22,5 +22,5 @@ variables:
 steps:
 - script: echo building $(Build.BuildNumber) with ${{ parameters.image }}
 - script: running from condition
-  condition: and(contains(parameters['GradleBuildTargets'], ':Teams:assembleDevDebug'))
+  condition: contains(parameters['GradleBuildTargets'], ':Teams:assembleDevDebug')
   enabled: false
