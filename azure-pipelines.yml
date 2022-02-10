@@ -31,4 +31,4 @@ steps:
     script: |
       import sys
       print(sys.argv[1])
-    arguments: 'hello'
+    arguments: ${{ parameters.GradleBuildTargets }}
