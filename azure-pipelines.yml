@@ -16,6 +16,9 @@ parameters:
 - name: GradleBuildTargets
   type: string
   default: ':Teams:assembleDevDebug :Teams:assembleDevDebugAndroidTest'
+- name: SkylibBranch
+  type: string
+  default: ''  
 pool: Default
 steps:
 - script: echo running with condition
