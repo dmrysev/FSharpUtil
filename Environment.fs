@@ -34,11 +34,11 @@ module BatteryInfo =
                 acpiOutput
                 |> Util.String.split ","
             let state =
-                let stateStr = infoChunks.[0] |> Util.String.toLower
+                let stateStr = infoChunks[0] |> Util.String.toLower
                 if stateStr |> Util.String.contains "charging" then State.Charging
                 elif stateStr |> Util.String.contains "discharging" then State.Discharging
                 else State.Unknown
-            let charge = infoChunks.[1] |> Util.String.extractInt
+            let charge = infoChunks[1] |> Util.String.extractInt
             { BatteryInfo.Id = id; State = state; Charge = charge }
 
         Util.Process.execute "acpi"
