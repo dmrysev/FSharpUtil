@@ -29,7 +29,8 @@
     <Compile Include="Service/Daemon.fs" />
     <Compile Include="Service/MessageQueueMonitor.fs" />
     <Compile Include="Service/MessageQueueTreeMonitor.fs" />
-    <Compile Include="MessageQueueRequest.fs" />
+    <Compile Include="MessageQueueCommand.fs" />
+    <Compile Include="MessageQueueQuery.fs" />
     <Compile Include="Test.fs" />
     <Compile Include="Excel/Reader.fs" />
     <Compile Include="Excel/Writer.fs" />

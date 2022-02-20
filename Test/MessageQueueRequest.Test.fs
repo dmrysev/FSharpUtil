@@ -1,6 +1,8 @@
 module Util.Test.MessageQueueRequest
 
-open Util.MessageQueueRequest
+open Util
+open Util.MessageQueueCommand
+open Util.MessageQueueQuery
 open NUnit.Framework
 open FsUnit
 
@@ -11,10 +13,10 @@ type UnionMessage =
 [<Test>]
 let ``Write request must be handled``() =
     // ARRANGE
-    let config = { 
-        WriteRequestConfig.ListenerUpdareRate = System.TimeSpan.FromMilliseconds(1)
+    let config: MessageQueueCommand.Config = { 
+        ListenerUpdareRate = System.TimeSpan.FromMilliseconds(1)
         ResetQueue = true }
-    let request = WriteRequest<string>("util/test/request/write_request_test", config)
+    let request = Command<string>("util/test/request/write_request_test", config)
     let task, events = request.Subscribe()
     use taskCancellation = new Util.Async.ScopedCancellationTokenSource()
     Async.Start(task, taskCancellation.Token)
@@ -29,10 +31,10 @@ let ``Write request must be handled``() =
 [<Test>]
 let ``Write request must be handled if message is union type``() =
     // ARRANGE
-    let config = { 
-        WriteRequestConfig.ListenerUpdareRate = System.TimeSpan.FromMilliseconds(1)
+    let config: MessageQueueCommand.Config = { 
+        ListenerUpdareRate = System.TimeSpan.FromMilliseconds(1)
         ResetQueue = true }
-    let request = WriteRequest<UnionMessage>("util/test/request/write_request_union_type_test", config)
+    let request = Command<UnionMessage>("util/test/request/write_request_union_type_test", config)
     let task, events = request.Subscribe()
     use taskCancellation = new Util.Async.ScopedCancellationTokenSource()
     Async.Start(task, taskCancellation.Token)
@@ -50,8 +52,8 @@ let ``Write request must be handled if message is union type``() =
 [<Test>]
 let ``Read request must be handled and recieve response``() =
     // ARRANGE
-    let config = { ReadRequestConfig.ListenerUpdareRate = System.TimeSpan.FromMilliseconds(1) }
-    let request = ReadRequest<string, string>("util/test/request/read_request_test", config)
+    let config: MessageQueueQuery.Config = { ListenerUpdateRate = System.TimeSpan.FromMilliseconds(1) }
+    let request = Query<string, string>("util/test/request/read_request_test", config)
     let task, events = request.Subscribe()
     events.NewRequest.Add(fun requestHandler -> 
         let response = $"{requestHandler.RequestMessage}+test response"
@@ -69,8 +71,8 @@ let ``Read request must be handled and recieve response``() =
 [<Test>]
 let ``All read requests must be handled and recieve response``() =
     // ARRANGE
-    let config = { ReadRequestConfig.ListenerUpdareRate = System.TimeSpan.FromMilliseconds(1) }
-    let request = ReadRequest<string, string>("util/test/request/read_request_test", config)
+    let config: MessageQueueQuery.Config = { ListenerUpdateRate = System.TimeSpan.FromMilliseconds(1) }
+    let request = Query<string, string>("util/test/request/read_request_test", config)
     let task, events = request.Subscribe()
     events.NewRequest.Add(fun requestHandler -> 
         let response = $"{requestHandler.RequestMessage}+test response"
