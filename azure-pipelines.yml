@@ -21,6 +21,9 @@ parameters:
   default: ''  
 pool: Default
 steps:
+- ${{ each parameter in parameters }}:
+  - script: echo ${{ parameter.Key }} 
+  - script: echo ${{ parameter.Value }}
 - script: echo running with condition
   condition: contains('${{ parameters.GradleBuildTargets }}', ':Teams:assembleDevDebug')
 - task: PowerShell@2
