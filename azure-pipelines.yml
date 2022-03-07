@@ -36,5 +36,7 @@ steps:
     scriptSource: 'inline'
     script: |
       import sys
+      import os
       print(sys.argv[1])
+      print(os.environ)
     arguments: ${{ parameters.GradleBuildTargets }}
