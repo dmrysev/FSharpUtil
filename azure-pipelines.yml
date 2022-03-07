@@ -3,11 +3,40 @@
 # Add steps that build, run tests, deploy, and more:
 # https://aka.ms/yaml
 
-trigger:
-- master
+trigger: none
+parameters:
+- name: image
+  displayName: Pool Image
+  type: string
+  default: ubuntu-latest
+  values:
+  - windows-latest
+  - ubuntu-latest
+  - macOS-latest
+- name: GradleBuildTargets
+  type: string
+  default: ':Teams:assembleDevDebug :Teams:assembleDevDebugAndroidTest'
+- name: SkylibBranch
+  type: string
+  default: ''  
 pool: Default
-variables:
-  buildConfiguration: 'Release'
 steps:
-- script: dotnet build --configuration $(buildConfiguration)
-  displayName: 'dotnet build $(buildConfiguration)'
+- ${{ each parameter in parameters }}:
+  - script: echo ${{ parameter.Key }} 
+  - script: echo ${{ parameter.Value }}
+- script: echo running with condition
+  condition: contains('${{ parameters.GradleBuildTargets }}', ':Teams:assembleDevDebug')
+- task: PowerShell@2
+  inputs:
+    targetType: 'inline'
+    script: |
+      Write-Host "Hello World"
+- task: PythonScript@0
+  inputs:
+    scriptSource: 'inline'
+    script: |
+      import sys
+      import os
+      print(sys.argv[1])
+      print(os.environ)
+    arguments: ${{ parameters.GradleBuildTargets }}
