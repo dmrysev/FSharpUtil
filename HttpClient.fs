@@ -134,17 +134,19 @@ module TorClient =
         controlPortClient.ChangeCircuitAsync().Wait()
 
 module WebDriver =
-    let init(config: TorConfig) =
-        let profile = FirefoxProfile()
-        if config.Enabled then
-            profile.SetPreference("network.proxy.type", 1)
-            profile.SetPreference("network.proxy.socks", config.Ip)
-            profile.SetPreference("network.proxy.socks_port", config.Port)
-        profile.SetPreference("permissions.default.stylesheet", 2) // Disable CSS
-        profile.SetPreference("permissions.default.image", 2) // Disable images
-        profile.SetPreference("dom.ipc.plugins.enabled.libflashplayer.so", "false") // Disable Flash
-        let options = FirefoxOptions(Profile = profile)
+    type Config = {
+        Tor: TorConfig
+        WebBrowserExePath: FilePath }
+
+    let init(config: Config) =
+        let options = FirefoxOptions()
+        if config.Tor.Enabled then
+            let proxy = OpenQA.Selenium.Proxy()
+            proxy.SocksProxy <- $"{config.Tor.Ip}:{config.Tor.Port}"
+            proxy.SocksVersion <- 5
+            options.Proxy <- proxy
         options.AddArgument("-headless")
+        options.BrowserExecutableLocation <- config.WebBrowserExePath.Value
         new FirefoxDriver(options)
 
     let loadContent (webDriver: OpenQA.Selenium.IWebDriver) (url: Url) =
