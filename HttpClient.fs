@@ -147,6 +147,10 @@ module WebDriver =
         options.AddArgument("-headless")
         new FirefoxDriver(options)
 
-    let loadHtml (webDriver: OpenQA.Selenium.IWebDriver) (url: Url) =
+    let loadContent (webDriver: OpenQA.Selenium.IWebDriver) (url: Url) =
         webDriver.Navigate().GoToUrl(url.Value)
-        webDriver.PageSource |> HtmlDocument.Parse
+        webDriver.PageSource
+
+    let loadHtml (webDriver: OpenQA.Selenium.IWebDriver) (url: Url) =
+        loadContent webDriver url |> HtmlDocument.Parse
+
