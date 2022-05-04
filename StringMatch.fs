@@ -1,7 +1,7 @@
 module Util.StringMatch
 
 let isImageFile text = text |> Util.Regex.isMatch @"^.+\.(png|jpg|jpeg)$"
-let isVideoFile text = text |> Util.Regex.isMatch @"^.+\.(webm|flv|vob|ogg|ogv|drc|gifv|mng|avi|mov|qt|wmv|yuv|rm|rmvb|asf|amv|mp4|m4v|mp*|m?v|svi|3gp|flv|f4v|gif|mpeg|mpg)$"
+let isVideoFile text = text |> Util.Regex.isMatch @"^.+\.(webm|flv|vob|ogg|ogv|drc|gifv|mng|avi|mov|qt|wmv|yuv|rm|rmvb|asf|amv|mp4|m4v|mp*|m?v|svi|3gp|flv|f4v|gif|mpeg|mpg|mkv)$"
 let notEmpty text = text <> ""
 
 let isInteger text =
