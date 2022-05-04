@@ -29,6 +29,14 @@ let listFiles (dirPath: DirectoryPath) =
     System.IO.Directory.EnumerateFiles dirPath.Value
     |> Seq.map FilePath
 
+let listFilesRecursive (dirPath: DirectoryPath) = 
+    System.IO.Directory.EnumerateFiles(dirPath.Value, "*", System.IO.SearchOption.AllDirectories)
+    |> Seq.map FilePath
+
+let listFilesRecursivePattern (dirPath: DirectoryPath) (pattern: string) = 
+    System.IO.Directory.EnumerateFiles(dirPath.Value, pattern, System.IO.SearchOption.AllDirectories)
+    |> Seq.map FilePath
+
 let listDirectories (dirPath: DirectoryPath) =
     System.IO.Directory.EnumerateDirectories dirPath.Value
     |> Seq.map DirectoryPath
