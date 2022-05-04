@@ -34,3 +34,6 @@ let listDirectories (dirPath: DirectoryPath) =
     |> Seq.map DirectoryPath
 
 let copy (source: DirectoryPath) (destination: DirectoryPath) = raise (System.NotImplementedException "")
+
+let move (source: DirectoryPath) (destination: DirectoryPath) = 
+    System.IO.Directory.Move(source.Value, destination.Value)
