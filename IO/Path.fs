@@ -101,6 +101,13 @@ type DirectoryPath(str: string) =
 
     member this.DirectoryName = System.IO.Path.GetFileName path |> DirectoryName
 
+    member this.Parent = 
+        let parent = System.IO.Directory.GetParent this.Value
+        parent.ToString() |> DirectoryPath
+
+    member this.SetHeadDirectoryName (newName: string) =
+        this.Parent/DirectoryName newName
+
     override this.GetHashCode () = this.Value.GetHashCode()
     override this.Equals other =
         match other with
