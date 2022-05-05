@@ -115,7 +115,21 @@ type FilePath with
         let extension = this.FileName.Extension
         let newFileName = FileName newName |> FileName.setExtension extension
         this.DirectoryPath/newFileName
+    static member relativeTo (dirPath: DirectoryPath) (filePath: FilePath) = 
+        let toRemove = $"{dirPath.Value}/"
+        filePath.Value 
+        |> Util.String.remove toRemove
+        |> FilePath
+    static member hasDirectoryPath (filePath: FilePath) =
+        let dirPath = System.IO.Path.GetDirectoryName filePath.Value
+        dirPath <> ""
 
 module DirectoryPath =
     let directoryName (dirPath: DirectoryPath) = dirPath.DirectoryName
+
+    let relativeTo (dirPath1: DirectoryPath) (dirPath2: DirectoryPath) = 
+        let toRemove = $"{dirPath1.Value}/"
+        dirPath2.Value 
+        |> Util.String.remove toRemove
+        |> DirectoryPath
 
