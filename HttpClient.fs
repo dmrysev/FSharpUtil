@@ -96,6 +96,7 @@ let downloadBinaryAsync (httpClient: HttpClient) (config: HttpConfig) (url: Url)
                 | Some headers -> headers |> Seq.iter message.Headers.Add
                 | None -> ()
                 use! response = httpClient.SendAsync(message, HttpCompletionOption.ResponseHeadersRead) |> Async.AwaitTask
+                response.EnsureSuccessStatusCode() |> ignore
                 use! streamToReadFrom = response.Content.ReadAsStreamAsync() |> Async.AwaitTask
                 use streamToWriteTo = System.IO.File.Open(outputFilePath.Value, System.IO.FileMode.Create)
                 return! streamToReadFrom.CopyToAsync(streamToWriteTo) |> Async.AwaitTask             
