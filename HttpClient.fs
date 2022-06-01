@@ -140,15 +140,14 @@ module WebDriver =
         WebBrowserExePath: FilePath }
 
     let init(config: Config) =
-        let options = FirefoxOptions()
+        let options = OpenQA.Selenium.Chrome.ChromeOptions()
+        options.DebuggerAddress <- "127.0.0.1:9223"
         if config.Tor.Enabled then
             let proxy = OpenQA.Selenium.Proxy()
             proxy.SocksProxy <- $"{config.Tor.Ip}:{config.Tor.Port}"
             proxy.SocksVersion <- 5
             options.Proxy <- proxy
-        options.AddArgument("-headless")
-        options.BrowserExecutableLocation <- config.WebBrowserExePath.Value
-        new FirefoxDriver(options)
+        new OpenQA.Selenium.Chrome.ChromeDriver(options)
 
     let loadContent (webDriver: OpenQA.Selenium.IWebDriver) (url: Url) =
         webDriver.Navigate().GoToUrl(url.Value)
