@@ -67,7 +67,7 @@ let isSymbolicLink (filePath: FilePath) =
 
 let getSymbolicLinkRealPath (filePath: FilePath) =
     if not (isSymbolicLink filePath) then raise (System.ArgumentException "Not a symbolic link")
-    let command = sprintf "readlink -f '%s'" filePath.Value
+    let command = sprintf "readlink -f \"%s\"" filePath.Value
     let output = Util.Process.execute command
     output.Replace("\n", "")
 
