@@ -63,6 +63,7 @@ type FilePath(str: string) =
     static member IsAbsolute (filePath: FilePath) = filePath.Value |> isAbsolute
     member this.isAbsolute = this |> FilePath.IsAbsolute
     member this.FileName = path |> System.IO.Path.GetFileName |> FileName
+    static member fileName (filePath: FilePath) = filePath.FileName
     override this.GetHashCode () = this.Value.GetHashCode()
     override this.Equals other =
         match other with
