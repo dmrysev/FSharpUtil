@@ -49,3 +49,8 @@ let move (source: DirectoryPath) (destination: DirectoryPath) =
 let createSymbolicLink (sourcePath: DirectoryPath) (destinationPath: string) =
     let command = sprintf "ln -s \"%s\" \"%s\"" sourcePath.Value destinationPath
     Util.Process.execute command |> ignore
+
+let getSymbolicLinkRealPath (path: DirectoryPath) =
+    let command = sprintf "readlink -f \"%s\"" path.Value
+    let output = Util.Process.execute command
+    output.Replace("\n", "")
