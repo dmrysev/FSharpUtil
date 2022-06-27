@@ -5,8 +5,13 @@ let set (value: string) =
     Util.Process.executeNoOutput(command)
 
 let get () =
-        Util.Process.execute("xclip -o -sel clip")
-        |> Util.String.removeLastCharacterIfEquals "\n"
+    let clipboardValue =
+        try 
+            Util.Process.execute("xclip -o -sel clip")
+        with error -> 
+            if error.Message.Contains "target STRING not available" then ""
+            else raise error
+    clipboardValue |> Util.String.removeLastCharacterIfEquals "\n"
 
 let clear () =
     set("")
