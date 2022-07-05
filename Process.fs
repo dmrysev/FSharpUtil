@@ -37,13 +37,10 @@ let executeNoOutput (command: string) =
     System.IO.File.WriteAllText(temporaryScriptFile, command)
     let p = new System.Diagnostics.Process()
     p.StartInfo.RedirectStandardOutput <- false
-    p.StartInfo.RedirectStandardError <- true
+    p.StartInfo.RedirectStandardError <- false
     p.StartInfo.UseShellExecute <- false
     p.StartInfo.FileName <- "/bin/bash"
     p.StartInfo.Arguments <- temporaryScriptFile
     p.Start() |> ignore
-    let errorReader = p.StandardError
-    let errorOutput = errorReader.ReadToEnd()  
     p.WaitForExit()
-    if errorOutput <> "" then raise (System.SystemException errorOutput)
     System.IO.File.Delete temporaryScriptFile
