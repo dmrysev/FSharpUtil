@@ -18,10 +18,12 @@ let create (dirPath: DirectoryPath) =
     System.IO.Directory.CreateDirectory dirPath.Value |> ignore
 
 let delete (dirPath: DirectoryPath) = 
+    if dirPath |> exists then 
+        System.IO.Directory.Delete(dirPath.Value, true)
+
+let deleteSymbolicLink (dirPath: DirectoryPath) = 
     if dirPath |> isSymbolicLink then
         dirPath.Value |> FilePath |> Util.IO.File.delete
-    elif dirPath |> exists then 
-        System.IO.Directory.Delete(dirPath.Value, true)
 
 let generateTemporaryDirectory() =
     let tempDir = Util.Environment.SpecialFolder.temporary
