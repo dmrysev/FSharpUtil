@@ -14,6 +14,10 @@ let isAbsolute path = path |> Util.String.startsWith (string directorySparator)
 
 let realPath (path: string) = Util.Process.execute $"realpath '{path}'"
 
+let isSymbolicLink (path: string) =
+    let pathInfo = System.IO.FileInfo path
+    pathInfo.Attributes.HasFlag(System.IO.FileAttributes.ReparsePoint)  
+
 type FileName (str: string) = 
     let path = 
         if str = "" then raise (System.ArgumentException "File name can't be empty")
@@ -64,6 +68,8 @@ type FilePath(str: string) =
     member this.isAbsolute = this |> FilePath.IsAbsolute
     member this.FileName = path |> System.IO.Path.GetFileName |> FileName
     static member fileName (filePath: FilePath) = filePath.FileName
+    static member realPath (filePath: FilePath) = realPath filePath.Value |> FilePath
+    member this.RealPath = realPath path |> FilePath
     override this.GetHashCode () = this.Value.GetHashCode()
     override this.Equals other =
         match other with
@@ -107,6 +113,9 @@ type DirectoryPath(str: string) =
 
     member this.SetHeadDirectoryName (newName: string) =
         this.Parent/DirectoryName newName
+
+    static member realPath (dirPath: DirectoryPath) = realPath dirPath.Value |> DirectoryPath
+    member this.RealPath = realPath path |> DirectoryPath
 
     override this.GetHashCode () = this.Value.GetHashCode()
     override this.Equals other =

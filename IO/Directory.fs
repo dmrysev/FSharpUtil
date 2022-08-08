@@ -8,14 +8,19 @@ let empty (dirPath: DirectoryPath) =
 let exists (dirPath: DirectoryPath) =
     System.IO.Directory.Exists dirPath.Value
 
+let isSymbolicLink (dirPath: DirectoryPath) =
+    Util.IO.Path.isSymbolicLink dirPath.Value
+
 let countFiles (dirPath: DirectoryPath) =
     System.IO.Directory.EnumerateFiles dirPath.Value |> Seq.length
 
 let create (dirPath: DirectoryPath) = 
     System.IO.Directory.CreateDirectory dirPath.Value |> ignore
 
-let delete (dirPath: DirectoryPath) =  
-    if dirPath |> exists then 
+let delete (dirPath: DirectoryPath) = 
+    if dirPath |> isSymbolicLink then
+        dirPath.Value |> FilePath |> Util.IO.File.delete
+    elif dirPath |> exists then 
         System.IO.Directory.Delete(dirPath.Value, true)
 
 let generateTemporaryDirectory() =
@@ -48,6 +53,9 @@ let listDirectoriesRecursive (dirPath: DirectoryPath) =
 let copy (source: DirectoryPath) (destination: DirectoryPath) = raise (System.NotImplementedException "")
 
 let move (source: DirectoryPath) (destination: DirectoryPath) = 
+    let destination = 
+        if destination |> exists then destination/source.DirectoryName
+        else destination
     System.IO.Directory.Move(source.Value, destination.Value)
 
 let createSymbolicLink (sourcePath: DirectoryPath) (destinationPath: string) =

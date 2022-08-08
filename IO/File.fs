@@ -62,8 +62,7 @@ let readAllLines (filePath: FilePath) = System.IO.File.ReadAllLines filePath.Val
 let readAllText (filePath: FilePath) = System.IO.File.ReadAllText filePath.Value
 
 let isSymbolicLink (filePath: FilePath) =
-    let pathInfo = System.IO.FileInfo filePath.Value
-    pathInfo.Attributes.HasFlag(System.IO.FileAttributes.ReparsePoint)  
+    Util.IO.Path.isSymbolicLink filePath.Value
 
 let getSymbolicLinkRealPath (filePath: FilePath) =
     if not (isSymbolicLink filePath) then raise (System.ArgumentException "Not a symbolic link")
@@ -79,4 +78,3 @@ let openWithDefaultApplication (filePath: FilePath) =
     if Util.Environment.OS.isLinux() then
         Util.Process.executeNoOutput $"xdg-open {filePath.Value} &"
     else raise (System.NotImplementedException())
-        
