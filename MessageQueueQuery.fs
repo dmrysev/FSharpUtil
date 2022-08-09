@@ -12,7 +12,7 @@ type Query<'a, 'b> (queueName: string, ?config: Config) =
         let requestQueueName = $"{queueName}/request/{recieverId}"
         Util.MessageQueue.ensureQueueInitialized requestQueueName
         message |> toJson |> Util.MessageQueue.enqueue requestQueueName
-        new ResponseHandler(queueName, recieverId, config)
+        new ResponseHandler<'b>(queueName, recieverId, config)
     member this.Subscribe () =
         let newRequestEvent = new Event<QueryHandler<'a, 'b>>()
         let events = { QueryEvents.NewRequest = newRequestEvent.Publish  }
@@ -34,7 +34,7 @@ and QueryHandler<'a, 'b>(queueName, subQueueMessage: SubQueueMessage) =
         message |> toJson |> Util.MessageQueue.enqueue responseQueueName
         ()
 and Config = { ListenerUpdateRate: System.TimeSpan }
-and ResponseHandler (queueName, recieverId, config: Config) =
+and ResponseHandler<'b> (queueName, recieverId, config: Config) =
     let requestQueueName = $"{queueName}/request/{recieverId}"
     let responseQueueName = $"{queueName}/response/{recieverId}"
     do Util.MessageQueue.ensureQueueInitialized responseQueueName
@@ -43,14 +43,14 @@ and ResponseHandler (queueName, recieverId, config: Config) =
             Util.MessageQueue.removeQueue requestQueueName
             Util.MessageQueue.removeQueue responseQueueName
     member this.Subscribe () =
-        let newResponseEvent = new Event<'a>()
+        let newResponseEvent = new Event<'b>()
         let events = { ResponseEvents.NewResponse = newResponseEvent.Publish  }
         let messageQueueConfig = {
             Util.Service.MessageQueueMonitor.Config.QueueName = responseQueueName
             UpdateRate = config.ListenerUpdateRate }
         let task, messageQueueEvents = Util.Service.MessageQueueMonitor.init messageQueueConfig
         messageQueueEvents.NewMessage.Add(fun message -> 
-            fromJson message.Content
+            fromJson<'b> message.Content
             |> newResponseEvent.Trigger )
         (task, events)
     member this.WaitForOne () =
@@ -58,4 +58,4 @@ and ResponseHandler (queueName, recieverId, config: Config) =
         use taskCancellation = new Util.Async.ScopedCancellationTokenSource()
         Async.Start(task, taskCancellation.Token)
         Async.AwaitEvent events.NewResponse |> Async.RunSynchronously
-and ResponseEvents<'a> = { NewResponse: IEvent<'a> }
+and ResponseEvents<'b> = { NewResponse: IEvent<'b> }
