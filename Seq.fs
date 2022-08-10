@@ -10,3 +10,6 @@ let replace oldItem newItem seq =
     seq
     |> Seq.except [oldItem]
     |> Seq.append [newItem]
+
+let hasItemAt index items =
+    index >= 0 && index < (items |> Seq.length)
