@@ -17,6 +17,8 @@ let countFiles (dirPath: DirectoryPath) =
 let create (dirPath: DirectoryPath) = 
     System.IO.Directory.CreateDirectory dirPath.Value |> ignore
 
+let ensureExists (dirPath: DirectoryPath) = if not (dirPath |> exists) then create dirPath
+
 let delete (dirPath: DirectoryPath) = 
     if dirPath |> exists then 
         System.IO.Directory.Delete(dirPath.Value, true)

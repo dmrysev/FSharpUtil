@@ -58,6 +58,7 @@ let copy (sourceFilePath: FilePath) destinationPath =
         System.IO.File.Copy(sourceFilePath.Value, destinationPath, true)
 
 let exists (filePath: FilePath) = System.IO.File.Exists filePath.Value
+let ensureExists (filePath: FilePath) = if not (filePath |> exists) then create filePath
 let readAllLines (filePath: FilePath) = System.IO.File.ReadAllLines filePath.Value
 let readAllText (filePath: FilePath) = System.IO.File.ReadAllText filePath.Value
 
