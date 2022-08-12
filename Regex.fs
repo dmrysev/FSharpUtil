@@ -8,3 +8,7 @@ let matchValue (pattern: string) (str: string) =
 
 let isMatch (pattern: string) (str: string) =
     Regex.IsMatch(str, pattern)
+
+let isMatchIgnoreCase (pattern: string) (str: string) =
+    let regex = Regex(pattern, RegexOptions.IgnoreCase)
+    regex.IsMatch(str)
