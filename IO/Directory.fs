@@ -58,7 +58,7 @@ let copy (source: DirectoryPath) (destination: DirectoryPath) = raise (System.No
 
 let move (source: DirectoryPath) (destination: DirectoryPath) = 
     let destination = 
-        if destination |> exists then destination/source.DirectoryName
+        if destination |> exists then destination/(source |> DirectoryPath.directoryName)
         else destination
     System.IO.Directory.Move(source.Value, destination.Value)
 

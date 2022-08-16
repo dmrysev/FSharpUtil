@@ -14,7 +14,7 @@ let run (workingDirectory: DirectoryPath) (command: string) =
     p
 
 let add (filePath: FilePath) = 
-    let workingDirectory = filePath.DirectoryPath
+    let workingDirectory = filePath |> FilePath.directoryPath
     let command = sprintf "git add %s" filePath.Value
     let proc = run workingDirectory command
     proc.WaitForExit()

@@ -1,6 +1,7 @@
 module Util.Test.MessageQueueRequest
 
 open Util
+open Util.IO.Path
 open Util.MessageQueueCommand
 open Util.MessageQueueQuery
 open NUnit.Framework
@@ -9,6 +10,9 @@ open FsUnit
 type UnionMessage = 
 | FieldA of string
 | FieldB of int
+
+type ComplexMessage = {
+    Path: FilePath }
 
 [<Test>]
 let ``Write request must be handled``() =
@@ -89,3 +93,22 @@ let ``All read requests must be handled and recieve response``() =
     // ASSERT
     result1 |> should equal "test request 1+test response"
     result2 |> should equal "test request 2+test response"
+
+[<Test>]
+let ``Write request must support messages with complex types``() =
+    // ARRANGE
+    let config: MessageQueueCommand.Config = { 
+        ListenerUpdareRate = System.TimeSpan.FromMilliseconds(1)
+        ResetQueue = true }
+    let request = Command<ComplexMessage>("util/test/request/write_request_test", config)
+    let task, events = request.Subscribe()
+    use taskCancellation = new Util.Async.ScopedCancellationTokenSource()
+    Async.Start(task, taskCancellation.Token)
+    let testMessage: ComplexMessage = { Path = FilePath "/some/path/file.jpg" }
+
+    // ACT
+    Async.Start(async { do! request.SendRequestAsync testMessage }, taskCancellation.Token)
+    let message = events.NewRequest |> Async.AwaitEvent |> Async.RunSynchronously
+
+    // ASSERT
+    message |> should equal testMessage

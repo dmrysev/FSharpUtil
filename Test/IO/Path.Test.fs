@@ -75,3 +75,24 @@ let ``Trying to join with absolute directroy path, must throw argument exception
 [<Test>]
 let ``Trying to join with absolute file path, must throw argument exception``() =
     (fun () -> DirectoryPath "/A"/FilePath "/B/file.txt" |> ignore) |> should throw typeof<System.ArgumentException>
+
+[<Test>]
+let ``Get url domain name``() =
+    (Url "http://testdomain.com") |> Url.domainName |> should equal "testdomain.com"
+    (Url "http://testdomain.com/") |> Url.domainName |> should equal "testdomain.com"
+    (Url "http://testdomain.com/A") |> Url.domainName |> should equal "testdomain.com"
+    (Url "http://testdomain.com/A/B") |> Url.domainName |> should equal "testdomain.com"
+    (Url "http://testdomain.com/file.txt") |> Url.domainName |> should equal "testdomain.com"
+    (Url "http://testdomain.com/A/file.txt") |> Url.domainName |> should equal "testdomain.com"
+
+    (Url "https://testdomain.com") |> Url.domainName |> should equal "testdomain.com"
+    (Url "https://testdomain.com/") |> Url.domainName |> should equal "testdomain.com"
+    (Url "https://testdomain.com/A") |> Url.domainName |> should equal "testdomain.com"
+    (Url "https://testdomain.com/A/B") |> Url.domainName |> should equal "testdomain.com"
+    (Url "https://testdomain.com/file.txt") |> Url.domainName |> should equal "testdomain.com"
+    (Url "https://testdomain.com/A/file.txt") |> Url.domainName |> should equal "testdomain.com"
+
+[<Test>]
+let ``Fix url``() =
+    "https://source.com/view/1234" |> Url.fix |> should equal "https://source.com/view/1234"
+    "https://source.com/view/1234/" |> Url.fix |> should equal "https://source.com/view/1234"

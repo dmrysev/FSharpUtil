@@ -90,7 +90,7 @@ let downloadBinaryAsync (httpClient: HttpClient) (config: HttpConfig) (url: Url)
     let task = async {
         let rec tryRun(attempt: int) = async {
             try
-                outputFilePath.DirectoryPath |> Util.IO.Directory.create
+                outputFilePath |> FilePath.directoryPath |> Util.IO.Directory.create
                 let message = new HttpRequestMessage(System.Net.Http.HttpMethod.Get, url.Value)
                 match config.Headers with
                 | Some headers -> headers |> Seq.iter message.Headers.Add

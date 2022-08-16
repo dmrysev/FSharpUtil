@@ -4,7 +4,7 @@ open Util.IO.Path
 open System.IO
 
 let create (filePath: FilePath) =
-    let dirPath = filePath.DirectoryPath
+    let dirPath = filePath |> FilePath.directoryPath
     System.IO.Directory.CreateDirectory dirPath.Value |> ignore
     use fileStream = File.Create filePath.Value
     ()
@@ -37,12 +37,12 @@ let lastLine (filePath: string) = tail filePath 1 |> Seq.head
 let move (sourceFilePath: FilePath) (destinationPath: string) =
     if destinationPath |> exists && destinationPath |> isDirectory then
         let destinationPath = DirectoryPath destinationPath
-        let fileName = sourceFilePath.FileName
+        let fileName = sourceFilePath |> FilePath.fileName
         let destinationFilePath = destinationPath/fileName
         System.IO.File.Move(sourceFilePath.Value, destinationFilePath.Value)
     else
         let destinationPath = FilePath destinationPath
-        let dirPath = destinationPath.DirectoryPath
+        let dirPath = destinationPath |> FilePath.directoryPath
         System.IO.Directory.CreateDirectory dirPath.Value |> ignore
         System.IO.File.Move (sourceFilePath.Value, destinationPath.Value)
 
@@ -51,7 +51,7 @@ let delete (path: FilePath) = System.IO.File.Delete path.Value
 let copy (sourceFilePath: FilePath) destinationPath = 
     if destinationPath |> exists && destinationPath |> isDirectory then
         let destinationPath = DirectoryPath destinationPath
-        let fileName = sourceFilePath.FileName
+        let fileName = sourceFilePath |> FilePath.fileName
         let destinationFilePath = destinationPath/fileName
         System.IO.File.Copy(sourceFilePath.Value, destinationFilePath.Value, true)
     else
