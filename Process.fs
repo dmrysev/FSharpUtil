@@ -36,6 +36,7 @@ let executeNoOutput (command: string) =
     let temporaryScriptFile = "/tmp/" + guid + ".sh"
     System.IO.File.WriteAllText(temporaryScriptFile, command)
     let p = new System.Diagnostics.Process()
+    p.StartInfo.RedirectStandardInput <- false
     p.StartInfo.RedirectStandardOutput <- false
     p.StartInfo.RedirectStandardError <- false
     p.StartInfo.UseShellExecute <- false
