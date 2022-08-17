@@ -13,6 +13,9 @@ type UnionMessage = ChoiceA | ChoiceB
 
 type ComplexUnionMessage = ChoiceA of string | ChoiceB of int
 
+type OptionTypeMessage = {
+    StringField: string option }
+
 type ComplexTypeMessage = {
     Path: FilePath }
 
@@ -43,13 +46,30 @@ let ``Json serialization must support union types``() =
 [<Test>]
 let ``Json serialization must support complex union types``() =
     // ARRANGE
-    let testMessageA = ComplexUnionMessage.ChoiceA "my string"
+    let testMessageA = ComplexUnionMessage.ChoiceA "test string"
     let testMessageB = ComplexUnionMessage.ChoiceB 100
+
     // ACT
     let jsonStringA = testMessageA |> Json.toJson
     let resultMessageA = Json.fromJson<ComplexUnionMessage> jsonStringA
     let jsonStringB = testMessageB |> Json.toJson
     let resultMessageB = Json.fromJson<ComplexUnionMessage> jsonStringB
+
+    // ASSERT
+    resultMessageA |> should equal testMessageA
+    resultMessageB |> should equal testMessageB
+
+[<Test>]
+let ``Json serialization must support option types``() =
+    // ARRANGE
+    let testMessageA: OptionTypeMessage = { StringField = Some "test string" }
+    let testMessageB: OptionTypeMessage = { StringField = None }
+
+    // ACT
+    let jsonStringA = testMessageA |> Json.toJson
+    let resultMessageA = Json.fromJson<OptionTypeMessage> jsonStringA
+    let jsonStringB = testMessageB |> Json.toJson
+    let resultMessageB = Json.fromJson<OptionTypeMessage> jsonStringB
 
     // ASSERT
     resultMessageA |> should equal testMessageA
