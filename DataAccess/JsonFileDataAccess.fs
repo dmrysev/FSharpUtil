@@ -14,8 +14,10 @@ type JsonFileDataAccess (dataEntriesDirPath: DirectoryPath) =
     member this.ReadAll() =
         if not (dataEntriesDirPath |> Util.IO.Directory.exists) then Seq.empty
         else
-            Util.IO.Directory.listFiles dataEntriesDirPath
-            |> Seq.map Util.IO.File.readAllText
+            let dirInfo = System.IO.DirectoryInfo(dataEntriesDirPath.Value)
+            dirInfo.EnumerateFiles()
+            |> Seq.sortBy (fun x -> x.CreationTimeUtc)
+            |> Seq.map (fun x -> x.FullName |> Util.IO.Path.FilePath |> Util.IO.File.readAllText)
 
     member this.Write (id: string) (jsonString: string) =
         let entryFilePath = getEntryFilePath id
