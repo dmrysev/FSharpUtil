@@ -10,16 +10,22 @@ module Info =
         |> System.TimeSpan.FromSeconds
 
 module Screenshot =
-    let createOne (inputVideoFilePath: FilePath) (timestamp: System.TimeSpan) (outputScreenshotFilePath: FilePath) = 
+    let createOneAsync (inputVideoFilePath: FilePath) (timestamp: System.TimeSpan) (outputScreenshotFilePath: FilePath) = async {
         $"ffmpeg -ss {timestamp} -i '{inputVideoFilePath.Value}' -frames:v 1 -q:v 5 '{outputScreenshotFilePath.Value}' -v error"
         |> Util.Process.execute
-        |> ignore
+        |> ignore }
 
-    let createMany (inputVideoFilePath: FilePath) (chunksCount: int) (outputDirPath: DirectoryPath) =
+    let createOne (inputVideoFilePath: FilePath) (timestamp: System.TimeSpan) (outputScreenshotFilePath: FilePath) = 
+        createOneAsync inputVideoFilePath timestamp outputScreenshotFilePath |> Async.RunSynchronously
+
+    let createManyAsync (inputVideoFilePath: FilePath) (chunksCount: int) (outputDirPath: DirectoryPath) = 
         let duration = Info.duration inputVideoFilePath
         let durationChunk = duration/(double chunksCount)
         seq { for i in 0 .. (chunksCount - 1) -> (double i) * durationChunk }
-        |> Seq.iteri (fun i timestamp -> 
+        |> Seq.mapi (fun i timestamp -> async {
             let fileName = sprintf "%03i.jpg" (i + 1) |> FileName
             let outputScreenshotPath = outputDirPath/fileName
-            createOne inputVideoFilePath timestamp outputScreenshotPath )
+            do! createOneAsync inputVideoFilePath timestamp outputScreenshotPath }) 
+        
+    let createMany (inputVideoFilePath: FilePath) (chunksCount: int) (outputDirPath: DirectoryPath) =
+        createManyAsync inputVideoFilePath chunksCount outputDirPath |> Async.Parallel |> Async.RunSynchronously
