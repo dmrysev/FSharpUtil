@@ -29,3 +29,31 @@ module Screenshot =
         
     let createMany (inputVideoFilePath: FilePath) (chunksCount: int) (outputDirPath: DirectoryPath) =
         createManyAsync inputVideoFilePath chunksCount outputDirPath |> Async.Parallel |> Async.RunSynchronously
+
+module Format =
+    type TimestampRange = { 
+        Start: System.TimeSpan
+        End: System.TimeSpan }
+
+    let cutByTimestampRange (inputVideoFilePath: FilePath) (timestampRange: TimestampRange) (outputVideoFilePath: FilePath) =
+        $"ffmpeg -ss {timestampRange.Start} -to {timestampRange.End} -i {inputVideoFilePath.Value} -c copy -v error -y {outputVideoFilePath.Value}"
+        |> Util.Process.execute
+        |> ignore         
+
+    let cutByTimestampRanges (inputVideoFilePath: FilePath) (timestampRanges: TimestampRange seq) (temporaryDirPath: DirectoryPath) (outputVideoFilePath: FilePath) =
+        let guid = Util.Guid.generate()
+        let temporaryDirPath = temporaryDirPath/DirectoryName guid
+        Util.IO.Directory.create temporaryDirPath
+        let videoChunksListFilePath = temporaryDirPath/FileName "list.txt"
+        Util.IO.File.create videoChunksListFilePath
+        timestampRanges
+        |> Seq.iteri(fun i range ->
+            let extension = inputVideoFilePath |> FilePath.fileName |> FileName.extension
+            let videoChunkFileName = sprintf "%03i" i |> FileName |> FileName.setExtension extension
+            let videoChunkFilePath = temporaryDirPath/videoChunkFileName
+            cutByTimestampRange inputVideoFilePath range videoChunkFilePath
+            Util.IO.File.appendLine videoChunksListFilePath $"file {videoChunkFilePath.Value}" )
+        $"ffmpeg -f concat -safe 0 -i {videoChunksListFilePath.Value} -c copy -y -v error {outputVideoFilePath.Value}"
+        |> Util.Process.execute
+        |> ignore        
+        Util.IO.Directory.delete temporaryDirPath
