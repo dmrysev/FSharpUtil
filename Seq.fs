@@ -17,3 +17,6 @@ let hasItemAt index items =
 let removeItem item items =
     let index = items |> Seq.findIndex (fun x -> x = item)
     items |> Seq.removeAt index
+
+let tryFindItemIndex item items =
+    items |> Seq.tryFindIndex (fun x -> x = item)
