@@ -32,3 +32,14 @@ let ``Check if SeqA has overlap with SeqB``() =
     [1; 2] |> hasOverlap [3; 3; 2; 1; 2; 2; 3] |> should be True
     [1] |> hasOverlap [2] |> should be False
     [1] |> hasOverlap [2; 3] |> should be False
+
+[<Test>]
+let ``Remove existing item from sequence``() =
+    // ARRANGE
+    let initialSeq = seq { 1; 2; 3 }
+
+    // ACT
+    let result = initialSeq |> Util.Seq.removeItem 2
+
+    // ASSERT
+    result |> should equal (seq { 1; 3 })
