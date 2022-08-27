@@ -10,16 +10,20 @@ let run (command: string) =
     p.Start() |> ignore    
     p
 
-let execute (command: string) =
+let withBashScriptExecute (command: string) (p: System.Diagnostics.Process) =
     let guid = System.Guid.NewGuid().ToString()
     let temporaryScriptFile = "/tmp/" + guid + ".sh"
     System.IO.File.WriteAllText(temporaryScriptFile, command)
-    let p = new System.Diagnostics.Process()
+    p.Exited.Add (fun _ -> System.IO.File.Delete temporaryScriptFile)
+    p.StartInfo.FileName <- "/bin/bash"
+    p.StartInfo.Arguments <- temporaryScriptFile
+    p
+
+let execute (command: string) =
+    use p = new System.Diagnostics.Process() |> withBashScriptExecute command
     p.StartInfo.RedirectStandardOutput <- true
     p.StartInfo.RedirectStandardError <- true
     p.StartInfo.UseShellExecute <- false
-    p.StartInfo.FileName <- "/bin/bash"
-    p.StartInfo.Arguments <- temporaryScriptFile
     p.Start() |> ignore    
     let reader = p.StandardOutput
     let output = reader.ReadToEnd()
@@ -27,7 +31,6 @@ let execute (command: string) =
     let errorOutput = errorReader.ReadToEnd()
     p.WaitForExit()
     if errorOutput <> "" then raise (System.SystemException errorOutput)
-    System.IO.File.Delete temporaryScriptFile
     if output.EndsWith("\n") then output.Remove(output.Length - 1)
     else output
 

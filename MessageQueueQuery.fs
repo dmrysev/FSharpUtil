@@ -5,7 +5,7 @@ open Util.Service.MessageQueueTreeMonitor
 open Util.Json
 
 type Query<'a, 'b> (queueName: string, ?config: Config) =
-    let config = defaultArg config { ListenerUpdateRate = System.TimeSpan.FromSeconds(1.0) }
+    let config = defaultArg config { ListenerUpdateRate = System.TimeSpan.FromMilliseconds(100) }
     member this.ResetQueue() = Util.MessageQueue.removeQueue queueName
     member this.SendRequest message = 
         let recieverId = Util.Guid.generate()

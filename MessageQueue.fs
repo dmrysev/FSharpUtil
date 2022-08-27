@@ -128,6 +128,8 @@ let rec enqueueAsync queueName (message: string) = async {
 let enqueue queueName (message: string) =
     enqueueAsync queueName message |> Async.RunSynchronously
 
+let hasMessages queueName = getQueueDirPath queueName |> Util.IO.Directory.countFiles > 3
+
 let unsafeDequeueAsync queueName = async {
     let queueDirPath = getQueueDirPath queueName
 
@@ -169,7 +171,9 @@ let unsafeDequeueAsync queueName = async {
 
 let rec dequeueAsync queueName = async {
     try
-        return! unsafeDequeueAsync queueName
+        if hasMessages queueName then
+            return! unsafeDequeueAsync queueName
+        else return None
     with
         | :? System.IO.IOException -> // this is expected in multi process case
             do! Async.Sleep 50

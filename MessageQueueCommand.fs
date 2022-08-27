@@ -6,7 +6,7 @@ open Util.Json
 
 type Command<'a> (queueName: string, ?config: Config) =
     let config = defaultArg config { 
-        ListenerUpdareRate = System.TimeSpan.FromSeconds(1.0)
+        ListenerUpdareRate = System.TimeSpan.FromMilliseconds(100)
         ResetQueue = false }
     let requestQueueName = $"{queueName}/request"
     let parseMessage message =
