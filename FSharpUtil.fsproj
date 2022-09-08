@@ -2,9 +2,12 @@
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
+    <!-- <OtherFlags>-define:DEBUG_LOG_INFO</OtherFlags> -->
+    <!-- <OtherFlags>-define:DEBUG_LOG_ERROR</OtherFlags> -->
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="Log.fs" />
     <Compile Include="Option.fs" />
     <Compile Include="Guid.fs" />
     <Compile Include="Async.fs" />

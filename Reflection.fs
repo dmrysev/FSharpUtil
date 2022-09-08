@@ -24,3 +24,5 @@ let loadPlugins<'a>(pluginsDirPath: DirectoryPath) =
         |> Seq.filter(fun x -> not (x |> isNull) )
         |> Seq.cast<'a>
     else Seq.empty
+
+let currentExecutableFilePath() = System.Reflection.Assembly.GetExecutingAssembly().Location |> FilePath

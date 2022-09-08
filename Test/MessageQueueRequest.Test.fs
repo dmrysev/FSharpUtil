@@ -7,108 +7,87 @@ open Util.MessageQueueQuery
 open NUnit.Framework
 open FsUnit
 
-type UnionMessage = 
-| FieldA of string
-| FieldB of int
+type UnionMessage = FieldA of string | FieldB of int
+type ComplexMessage = { Path: FilePath }
 
-type ComplexMessage = {
-    Path: FilePath }
+let initQueueName() = $"util/test/{Util.Guid.generate()}"
 
 [<Test>]
-let ``Write request must be handled``() =
+let ``Command request must be handled``() =
     // ARRANGE
     let config: MessageQueueCommand.Config = { 
-        ListenerUpdareRate = System.TimeSpan.FromMilliseconds(1)
-        ResetQueue = true }
-    let request = Command<string>("util/test/request/write_request_test", config)
-    let task, events = request.Subscribe()
-    use taskCancellation = new Util.Async.ScopedCancellationTokenSource()
-    Async.Start(task, taskCancellation.Token)
+        ResponseTimeout = Some (System.TimeSpan.FromMilliseconds 100)
+        ResponseMaxRetries = None }
+    let command = Command<string>(initQueueName(), config)
 
     // ACT
-    Async.Start(async { do! request.SendRequestAsync("test message") }, taskCancellation.Token)
-    let message = events.NewRequest |> Async.AwaitEvent |> Async.RunSynchronously
+    let mutable requestArgs = ""
+    use responder = command.NewResponder()
+    responder.NewRequest.Add(fun requestHandler -> 
+        requestArgs <- requestHandler.RequestArgs
+        requestHandler.SendSuccessResponse() )
+    let response = command.SendRequest $"test request"
 
     // ASSERT
-    message |> should equal "test message"
+    response |> should be (ofCase<@ MessageQueueCommand.Response.Success @>)
+    requestArgs |> should equal "test request"
 
 [<Test>]
-let ``Write request must be handled if message is union type``() =
+let ``Query request must be handled``() =
     // ARRANGE
-    let config: MessageQueueCommand.Config = { 
-        ListenerUpdareRate = System.TimeSpan.FromMilliseconds(1)
-        ResetQueue = true }
-    let request = Command<UnionMessage>("util/test/request/write_request_union_type_test", config)
-    let task, events = request.Subscribe()
-    use taskCancellation = new Util.Async.ScopedCancellationTokenSource()
-    Async.Start(task, taskCancellation.Token)
+    let config: MessageQueueQuery.Config = { 
+        ResponseTimeout = Some (System.TimeSpan.FromMilliseconds 100)
+        ResponseMaxRetries = None }
+    let query = MessageQueueQuery.Query<string, string>(initQueueName(), config)
 
     // ACT
-    Async.Start(async { do! request.SendRequestAsync(UnionMessage.FieldA "test message") }, taskCancellation.Token)
-    let message = events.NewRequest |> Async.AwaitEvent |> Async.RunSynchronously
+    use responder = query.NewResponder()
+    responder.NewRequest.Add(fun requestHandler -> 
+        $"{requestHandler.RequestArgs}+test response" |> requestHandler.SendResponse )
+    let response = query.SingleResponseRequest "test request" 
 
     // ASSERT
-    message |> should be (ofCase<@ FieldA @>)
-    match message with
-    | FieldA str -> str |> should equal "test message"
-    | FieldB _ -> ()
+    match response with
+    | MessageQueueQuery.Response.Success message -> message |> should equal "test request+test response"
+    | _ -> failwith "Invalid case"
 
 [<Test>]
-let ``Read request must be handled and recieve response``() =
+let ``Multiple query requests must be handled and recieve response``() =
     // ARRANGE
-    let config: MessageQueueQuery.Config = { ListenerUpdateRate = System.TimeSpan.FromMilliseconds(1) }
-    let request = Query<string, string>("util/test/request/read_request_test", config)
-    let task, events = request.Subscribe()
-    events.NewRequest.Add(fun requestHandler -> 
-        let response = $"{requestHandler.RequestMessage}+test response"
-        requestHandler.SendResponse(response))
-    use taskCancellation = new Util.Async.ScopedCancellationTokenSource()
-    Async.Start(task, taskCancellation.Token)
+    let config: MessageQueueQuery.Config = { 
+        ResponseTimeout = Some (System.TimeSpan.FromMilliseconds 100)
+        ResponseMaxRetries = None }
+    let query = MessageQueueQuery.Query<string, string>(initQueueName(), config)
 
     // ACT
-    use response = request.SendRequest("test request")
-    let result = response.WaitForOne()
+    use responder = query.NewResponder()
+    responder.NewRequest.Add(fun requestHandler -> 
+        $"{requestHandler.RequestArgs}+test response" |> requestHandler.SendResponse )
+    let response1 = query.SingleResponseRequest "test request 1"
+    let response2 = query.SingleResponseRequest "test request 2"
 
     // ASSERT
-    result |> should equal "test request+test response"
+    match response1 with
+    | MessageQueueQuery.Response.Success message -> message |> should equal "test request 1+test response"
+    | _ -> failwith "Invalid case"
+    match response2 with
+    | MessageQueueQuery.Response.Success message -> message |> should equal "test request 2+test response"
+    | _ -> failwith "Invalid case"
 
 [<Test>]
-let ``All read requests must be handled and recieve response``() =
+let ``Query request must be support case with no request arguments``() =
     // ARRANGE
-    let config: MessageQueueQuery.Config = { ListenerUpdateRate = System.TimeSpan.FromMilliseconds(1) }
-    let request = Query<string, string>("util/test/request/read_request_test", config)
-    let task, events = request.Subscribe()
-    events.NewRequest.Add(fun requestHandler -> 
-        let response = $"{requestHandler.RequestMessage}+test response"
-        requestHandler.SendResponse(response))
-    use taskCancellation = new Util.Async.ScopedCancellationTokenSource()
-    Async.Start(task, taskCancellation.Token)
+    let config: MessageQueueQuery.Config = { 
+        ResponseTimeout = Some (System.TimeSpan.FromMilliseconds 100)
+        ResponseMaxRetries = None }
+    let query = MessageQueueQuery.Query<unit, string>(initQueueName(), config)
 
     // ACT
-    use response1 = request.SendRequest("test request 1")
-    use response2 = request.SendRequest("test request 2")
-    let result1 = response1.WaitForOne()
-    let result2 = response2.WaitForOne()
+    use responder = query.NewResponder()
+    responder.NewRequest.Add(fun requestHandler -> requestHandler.SendResponse "test response" )
+    let response = query.SingleResponseRequest()
 
     // ASSERT
-    result1 |> should equal "test request 1+test response"
-    result2 |> should equal "test request 2+test response"
-
-[<Test>]
-let ``Write request must support messages with complex types``() =
-    // ARRANGE
-    let config: MessageQueueCommand.Config = { 
-        ListenerUpdareRate = System.TimeSpan.FromMilliseconds(1)
-        ResetQueue = true }
-    let request = Command<ComplexMessage>("util/test/request/write_request_test", config)
-    let task, events = request.Subscribe()
-    use taskCancellation = new Util.Async.ScopedCancellationTokenSource()
-    Async.Start(task, taskCancellation.Token)
-    let testMessage: ComplexMessage = { Path = FilePath "/some/path/file.jpg" }
-
-    // ACT
-    Async.Start(async { do! request.SendRequestAsync testMessage }, taskCancellation.Token)
-    let message = events.NewRequest |> Async.AwaitEvent |> Async.RunSynchronously
-
-    // ASSERT
-    message |> should equal testMessage
+    match response with
+    | MessageQueueQuery.Response.Success message -> message |> should equal "test response"
+    | _ -> failwith "Invalid case"

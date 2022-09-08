@@ -5,29 +5,20 @@ open Util.IO.Path
 open NUnit.Framework
 open FsUnit
 
-type SimpleMessage = {
-    StringField: string
-    IntField: int }
-
+type SimpleMessage = { StringField: string; IntField: int }
 type UnionMessage = ChoiceA | ChoiceB
-
-type ComplexUnionMessage = ChoiceA of string | ChoiceB of int
-
-type OptionTypeMessage = {
-    StringField: string option }
-
-type ComplexTypeMessage = {
-    Path: FilePath }
+type SimpleTypesUnionMessage = ChoiceA of string | ChoiceB of int
+type OptionTypeMessage = { StringField: string option }
+type ComplexTypeMessage = { Path: FilePath }
+type ComplexTypesUnionMessage = ChoiceA of SimpleMessage | ChoiceB of ComplexTypeMessage
 
 [<Test>]
 let ``Json serialization must support simple types``() =
     // ARRANGE
-    let testMessage: SimpleMessage = {
-        StringField = "test string"
-        IntField = 100 }
+    let testMessage: SimpleMessage = { StringField = "test string"; IntField = 100 }
+        
     // ACT
-    let jsonString = testMessage |> Json.toJson
-    let resultMessage = Json.fromJson<SimpleMessage> jsonString
+    let resultMessage = testMessage |> Json.toJson |> Json.fromJson<SimpleMessage>
 
     // ASSERT
     resultMessage |> should equal testMessage
@@ -36,24 +27,22 @@ let ``Json serialization must support simple types``() =
 let ``Json serialization must support union types``() =
     // ARRANGE
     let testMessage = UnionMessage.ChoiceA
+
     // ACT
-    let jsonString = testMessage |> Json.toJson
-    let resultMessage = Json.fromJson<UnionMessage> jsonString
+    let resultMessage = testMessage |> Json.toJson |> Json.fromJson<UnionMessage>
 
     // ASSERT
     resultMessage |> should equal testMessage
 
 [<Test>]
-let ``Json serialization must support complex union types``() =
+let ``Json serialization must support union of simple types``() =
     // ARRANGE
-    let testMessageA = ComplexUnionMessage.ChoiceA "test string"
-    let testMessageB = ComplexUnionMessage.ChoiceB 100
+    let testMessageA = SimpleTypesUnionMessage.ChoiceA "test string"
+    let testMessageB = SimpleTypesUnionMessage.ChoiceB 100
 
     // ACT
-    let jsonStringA = testMessageA |> Json.toJson
-    let resultMessageA = Json.fromJson<ComplexUnionMessage> jsonStringA
-    let jsonStringB = testMessageB |> Json.toJson
-    let resultMessageB = Json.fromJson<ComplexUnionMessage> jsonStringB
+    let resultMessageA = testMessageA |> Json.toJson |> Json.fromJson<SimpleTypesUnionMessage>
+    let resultMessageB = testMessageB |> Json.toJson |> Json.fromJson<SimpleTypesUnionMessage>
 
     // ASSERT
     resultMessageA |> should equal testMessageA
@@ -66,10 +55,8 @@ let ``Json serialization must support option types``() =
     let testMessageB: OptionTypeMessage = { StringField = None }
 
     // ACT
-    let jsonStringA = testMessageA |> Json.toJson
-    let resultMessageA = Json.fromJson<OptionTypeMessage> jsonStringA
-    let jsonStringB = testMessageB |> Json.toJson
-    let resultMessageB = Json.fromJson<OptionTypeMessage> jsonStringB
+    let resultMessageA = testMessageA |> Json.toJson |> Json.fromJson<OptionTypeMessage>
+    let resultMessageB = testMessageB |> Json.toJson |> Json.fromJson<OptionTypeMessage>
 
     // ASSERT
     resultMessageA |> should equal testMessageA
@@ -87,3 +74,16 @@ let ``Json serialization must support complex types``() =
     resultMessage.Path.Value |> should equal testMessage.Path.Value
     resultMessage |> should equal testMessage
 
+[<Test>]
+let ``Json serialization must support union of complex types``() =
+    // ARRANGE
+    let testMessageA = ComplexTypesUnionMessage.ChoiceA { StringField = "test string"; IntField = 100 }
+    let testMessageB = ComplexTypesUnionMessage.ChoiceB { Path = FilePath "/some/path/file.jpg" }
+
+    // ACT
+    let resultMessageA = testMessageA |> Json.toJson |> Json.fromJson<ComplexTypesUnionMessage>
+    let resultMessageB = testMessageB |> Json.toJson |> Json.fromJson<ComplexTypesUnionMessage>
+
+    // ASSERT
+    resultMessageA |> should equal testMessageA
+    resultMessageB |> should equal testMessageB

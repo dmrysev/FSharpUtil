@@ -1,30 +1,41 @@
 module Util.Service.MessageQueueMonitor
 
-type Config = {
-    QueueName: string
-    UpdateRate: System.TimeSpan }
-
-type Message = {
-    Content: string }
-
-type Events = {
-    NewMessage: IEvent<Message> }
-
-let init (config: Config) =
-    Util.MessageQueue.ensureQueueInitialized config.QueueName
+open System.IO
+type T (config: Config) =
+    do
+        Util.MessageQueue.ensureQueueInitialized config.QueueName
     let newMessageEvent = new Event<Message>()
-    let events = { Events.NewMessage = newMessageEvent.Publish }
-    let task = Util.Service.Daemon.init config.UpdateRate (fun _ -> async {
-        let! result = Util.MessageQueue.dequeueAsync config.QueueName
+    let checkQueue() =
+        Util.Log.debugInfo $"queue monitor check queue {config.QueueName}"
+        let result = Util.MessageQueue.dequeue config.QueueName
         match result with
         | Some content ->
+            Util.Log.debugInfo $"queue monitor new content {content} {config.QueueName}"
             let message: Message = {
                 Content = content }
             newMessageEvent.Trigger message
-        | None -> () })
-    task, events
-
-let waitForMessage (config: Config) =
-    let service, events = init config
-    service |> Async.Start
-    events.NewMessage |> Async.AwaitEvent |> Async.RunSynchronously
+        | None -> ()
+    let watcher, subscriber = 
+        let queueDirPath = Util.MessageQueue.getQueueDirPath config.QueueName
+        let watcher = new System.IO.FileSystemWatcher (queueDirPath.Value)
+        watcher.NotifyFilter <- NotifyFilters.LastWrite
+        watcher.Filter <- "*.msg"
+        watcher.IncludeSubdirectories <- false
+        watcher.EnableRaisingEvents <- true
+        let subscriber = watcher.Changed |> Observable.subscribe (fun (e: FileSystemEventArgs) -> 
+            Util.Log.debugInfo $"queue monitor watcher changed {queueDirPath.Value}"
+            checkQueue() )
+        watcher.Error.Add(fun e -> 
+            let ex = e.GetException()
+            Util.Log.debugError "tree monitor watcher error {queueDirPath.Value}. {ex.Message}" )
+        watcher, subscriber
+    interface System.IDisposable with
+        member this.Dispose() = 
+            subscriber.Dispose()
+            watcher.Dispose()
+    member val NewMessage = newMessageEvent.Publish with get
+    member this.CheckQueue() = checkQueue()
+    
+and Config = { QueueName: string }
+and Message = { Content: string }
+and Events = { NewMessage: IEvent<Message> }

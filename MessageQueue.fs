@@ -23,9 +23,9 @@ let getQueueLockFilePath queueName =
     let queueDirPath = getQueueDirPath queueName
     queueDirPath/FileName "lock"
 
-let getMessageFilePath queueName index =
+let getMessageFilePath queueName (index: int) =
     let queueDirPath = getQueueDirPath queueName
-    let fileName = index |> string |> FileName
+    let fileName = $"{index}.msg" |> FileName
     queueDirPath/fileName
 
 let isQueueInitialized queueName = 
@@ -37,15 +37,20 @@ let isQueueInitialized queueName =
        Util.IO.File.exists tailFilePath then true
     else false
 
-let resetQueue queueName = 
-    let queueDirPath = getQueueDirPath queueName
-    Util.IO.Directory.delete queueDirPath
-    let queueDirPath = getQueueDirPath queueName
-    Util.IO.Directory.create queueDirPath
-    let headFilePath = getQueueHeadFilePath queueName
-    Util.IO.File.writeText headFilePath "0"
-    let tailFilePath = getQueueTailFilePath queueName
-    Util.IO.File.writeText tailFilePath "0"
+let rec resetQueue queueName = 
+    try
+        let queueDirPath = getQueueDirPath queueName
+        Util.IO.Directory.delete queueDirPath
+        let queueDirPath = getQueueDirPath queueName
+        Util.IO.Directory.create queueDirPath
+        let headFilePath = getQueueHeadFilePath queueName
+        Util.IO.File.writeText headFilePath "0"
+        let tailFilePath = getQueueTailFilePath queueName
+        Util.IO.File.writeText tailFilePath "0"
+    with
+        | :? System.IO.IOException -> 
+            System.Threading.Thread.Sleep 50
+            resetQueue queueName
 
 let ensureQueueInitialized queueName = if not (queueName |> isQueueInitialized) then resetQueue queueName
 
@@ -55,10 +60,21 @@ let listQueueTree queueName =
     else
         Util.IO.Directory.listDirectories queueDirPath
         |> Seq.map (fun x -> x.Value |> String.remove tempDirPath.Value |> String.removeFirstCharacter )
+        |> Seq.filter isQueueInitialized
 
-let removeQueue queueName =
-    let queueDirPath = getQueueDirPath queueName
-    Util.IO.Directory.delete queueDirPath
+let rec removeQueueAsync queueName = async {
+    try
+        let queueDirPath = getQueueDirPath queueName
+        Util.IO.Directory.delete queueDirPath
+    with
+        | :? System.IO.IOException -> // this is expected in multi process case
+            if not (isQueueInitialized queueName) then ()  // this is expected in multi process case
+            else 
+                Util.Log.debugError $"remove queue error {queueName}"
+                do! Async.Sleep 50
+                do! removeQueueAsync queueName }
+
+let removeQueue queueName = removeQueueAsync queueName |> Async.RunSynchronously
 
 let countMessagesAsync queueName = async {
     let lockFilePath = getQueueLockFilePath queueName
@@ -115,15 +131,20 @@ let unsafeEnqueueAsync queueName (message: string) = async {
         raise (QueueLimitReachedException errorMessage)
     let newPos = tailStream.Seek(0 |> int64, SeekOrigin.Begin)
     use tailWriter = new StreamWriter(tailStream)
-    do! tailWriter.WriteLineAsync(newTailIndex |> string) |> Async.AwaitTask }
+    do! tailWriter.WriteLineAsync(newTailIndex |> string) |> Async.AwaitTask  }
 
 let rec enqueueAsync queueName (message: string) = async {
     try
+        Util.Log.debugInfo $"try enqueue {queueName} {message}"
         do! unsafeEnqueueAsync queueName message
+        Util.Log.debugInfo $"enqueue success {queueName} {message}"
     with
         | :? System.IO.IOException -> // this is expected in multi process case
-            do! Async.Sleep 50
-            do! enqueueAsync queueName message }
+            if not (isQueueInitialized queueName) then ()
+            else
+                Util.Log.debugError $"enqueue error {queueName} {message}"
+                do! Async.Sleep 50
+                do! enqueueAsync queueName message }
 
 let enqueue queueName (message: string) =
     enqueueAsync queueName message |> Async.RunSynchronously
@@ -169,15 +190,21 @@ let unsafeDequeueAsync queueName = async {
         do! headWriter.WriteLineAsync(newHeadIndex |> string) |> Async.AwaitTask
         return Some message }
 
-let rec dequeueAsync queueName = async {
-    try
-        if hasMessages queueName then
+let rec dequeueAsync queueName =
+    Util.Log.debugInfo $"dequeue {queueName}" 
+    let rec retryFunc attempt =  async {
+        try
             return! unsafeDequeueAsync queueName
-        else return None
-    with
+        with
         | :? System.IO.IOException -> // this is expected in multi process case
-            do! Async.Sleep 50
-            return! dequeueAsync queueName }
+            if not (isQueueInitialized queueName) then return None  // this is expected in multi process case
+            else
+                Util.Log.debugError $"dequeue error {queueName}"
+                if attempt < 10 then
+                    do! Async.Sleep 50
+                    return! retryFunc (attempt + 1)
+                else return None }
+    retryFunc 0
 
 let dequeue queueName =
     dequeueAsync queueName |> Async.RunSynchronously
