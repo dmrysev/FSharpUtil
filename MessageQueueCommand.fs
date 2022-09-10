@@ -36,7 +36,7 @@ and Requester<'RequestArgs> (
     let responseTimeoutMilliseconds = 
         let timeout = responseTimeout |> Option.defaultValue (System.TimeSpan.FromMinutes 1)
         timeout.TotalMilliseconds |> int
-    let responseMaxRetries = responseMaxRetries |> Option.defaultValue 3
+    let responseMaxRetries = responseMaxRetries |> Option.defaultValue 0
     let newResponseEvent = new Event<Response>()
     let mutable currentRequestArgs: 'RequestArgs option = None
     let messageQueueMonitor, subscriber =
