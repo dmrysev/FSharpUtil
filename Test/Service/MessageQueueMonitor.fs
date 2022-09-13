@@ -4,20 +4,20 @@ open Util.Service.MessageQueueMonitor
 open NUnit.Framework
 open FsUnit
 
+let spamQueueAsync queueName message = async {
+    while true do
+        do! Util.MessageQueue.enqueueAsync queueName message }
+
 [<Test>]
 let ``If message queue monitor service is running, adding a message to message queue, must trigger new message event``() =
     // ARRANGE
-    let config = {
-        Util.Service.MessageQueueMonitor.Config.QueueName = Util.Guid.generate()
-        UpdateRate = System.TimeSpan.FromMilliseconds(1.0) }
-    Util.MessageQueue.resetQueue config.QueueName
-    let task, events = Util.Service.MessageQueueMonitor.init config
+    let config: Util.Service.MessageQueueMonitor.Config = { QueueName = Util.Guid.generate() }
     use taskCancellation = new Util.Async.ScopedCancellationTokenSource()
-    Async.Start(task, taskCancellation.Token)
+    use monitor = new Util.Service.MessageQueueMonitor.T (config)
 
     // ACT
-    Async.Start( async { do! Util.MessageQueue.enqueueAsync config.QueueName "test message" }, taskCancellation.Token)
-    let message = events.NewMessage |> Async.AwaitEvent |> Async.RunSynchronously
+    Async.Start (spamQueueAsync config.QueueName "test message", taskCancellation.Token)
+    let message = monitor.NewMessage |> Async.AwaitEvent |> Async.RunSynchronously
 
     // ASSERT
     message.Content |> should equal "test message"
@@ -25,15 +25,12 @@ let ``If message queue monitor service is running, adding a message to message q
 [<Test>]
 let ``With message queue monitor initialized, adding a message to message queue, must trigger new message event``() =
     // ARRANGE
-    let config = {
-        Util.Service.MessageQueueMonitor.Config.QueueName = Util.Guid.generate()
-        UpdateRate = System.TimeSpan.FromMilliseconds(1.0) }
-    Util.MessageQueue.resetQueue config.QueueName
+    let config: Util.Service.MessageQueueMonitor.Config = { QueueName = Util.Guid.generate() }
     use monitor = new Util.Service.MessageQueueMonitor.T (config)
     use taskCancellation = new Util.Async.ScopedCancellationTokenSource()
 
     // ACT
-    Async.Start( async { do! Util.MessageQueue.enqueueAsync config.QueueName "test message" }, taskCancellation.Token)
+    Async.Start (spamQueueAsync config.QueueName "test message", taskCancellation.Token)
     let message = monitor.NewMessage |> Async.AwaitEvent |> Async.RunSynchronously
 
     // ASSERT
@@ -44,7 +41,6 @@ let ``With message queue monitor tree initialized, adding a message to message q
     // ARRANGE
     let config: Util.Service.MessageQueueTreeMonitor.Config = {
         QueueName = Util.Guid.generate()
-        UpdateRate = System.TimeSpan.FromMilliseconds(1.0)
         ResetQueue = false }
     use monitor = new Util.Service.MessageQueueTreeMonitor.T (config)
     use taskCancellation = new Util.Async.ScopedCancellationTokenSource()
@@ -52,7 +48,7 @@ let ``With message queue monitor tree initialized, adding a message to message q
     Util.MessageQueue.ensureQueueInitialized subQueueName
 
     // ACT
-    Async.Start( async { do! Util.MessageQueue.enqueueAsync subQueueName "test message" }, taskCancellation.Token)
+    Async.Start (spamQueueAsync subQueueName "test message", taskCancellation.Token)
     let message = monitor.NewMessage |> Async.AwaitEvent |> Async.RunSynchronously
 
     // ASSERT
