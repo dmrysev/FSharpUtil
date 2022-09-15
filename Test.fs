@@ -16,8 +16,10 @@ let startMessageQueueSpamming queueName message =
 
 let downloadBinaryFake (url: Url) (outputFilePath: FilePath) = Util.IO.File.create outputFilePath
 
-type EventMonitor<'a>(event: IEvent<'a>) =
-    let mutable triggerCount = 0
-    do event.Add(fun _ -> triggerCount <- triggerCount + 1)
-    member this.TriggerCount = triggerCount
+type EventMonitor<'a>(event: IEvent<'a>) as this =
+    do event.Add(fun (value: 'a) -> 
+        this.TriggerCount <- this.TriggerCount + 1
+        this.LastValue <- Some value)
+    member val TriggerCount = 0 with get, set
+    member val LastValue: 'a option = None with get, set
     
