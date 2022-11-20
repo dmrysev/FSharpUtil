@@ -56,7 +56,7 @@ type Url (value: string) =
         | _ -> false
 
 let exists (path: string) = System.IO.Directory.Exists path || System.IO.File.Exists path
-let isDirectory path =
+let isDirectory (path: string) =
     let attributes = System.IO.File.GetAttributes path
     attributes.HasFlag(System.IO.FileAttributes.Directory)
 let isAbsolute path = path |> Util.String.startsWith (string directorySparator)

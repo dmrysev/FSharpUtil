@@ -31,10 +31,9 @@ let findLinkskByPartialText (linkText: string) (html: HtmlDocument) =
     |> Seq.map snd
 
 let findLinksByRegex regexPattern html =
-    let isMatch link =
+    let isMatch (link: string) =
         let regex = Regex regexPattern
         regex.IsMatch link
-
     findLinks html
     |> Seq.map snd
     |> Seq.filter isMatch
