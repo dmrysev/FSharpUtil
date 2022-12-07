@@ -28,7 +28,7 @@ module Screenshot =
             do! createOneAsync inputVideoFilePath timestamp outputScreenshotPath }) 
         
     let createMany (inputVideoFilePath: FilePath) (chunksCount: int) (outputDirPath: DirectoryPath) =
-        createManyAsync inputVideoFilePath chunksCount outputDirPath |> Async.Parallel |> Async.RunSynchronously
+        createManyAsync inputVideoFilePath chunksCount outputDirPath |> Async.Parallel |> Async.RunSynchronously |> ignore
 
 module Format =
     type TimestampRange = { 
