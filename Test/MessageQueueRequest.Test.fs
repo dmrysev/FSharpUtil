@@ -26,10 +26,12 @@ let ``Command request must be handled``() =
     responder.NewRequest.Add(fun requestHandler -> 
         requestArgs <- requestHandler.RequestArgs
         requestHandler.SendSuccessResponse() )
-    let response = command.SendRequest $"test request"
+    let response = command.SendRequest "test request"
 
     // ASSERT
-    response |> should be (ofCase<@ MessageQueueCommand.Response.Success @>)
+    match response with
+    | MessageQueueCommand.Response.Success -> ()
+    | _ -> failwith "Invalid case"
     requestArgs |> should equal "test request"
 
 [<Test>]
