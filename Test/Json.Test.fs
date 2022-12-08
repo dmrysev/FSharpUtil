@@ -87,3 +87,16 @@ let ``Json serialization must support union of complex types``() =
     // ASSERT
     resultMessageA |> should equal testMessageA
     resultMessageB |> should equal testMessageB
+
+[<Test>]
+let ``Json serialization must support byte array``() =
+    // ARRANGE
+    // let testMessage = "test byte array string"
+    // let testBytes = System.Convert.FromBase64String(testMessage)
+    let testBytes: byte array = [| byte(0x00); byte(0x21); byte(0x60) |]
+
+    // ACT
+    let resultBytes = testBytes |> Json.toJson |> Json.fromJson<byte array>
+
+    // ASSERT
+    resultBytes |> should equal testBytes
