@@ -4,73 +4,58 @@ open Util
 open Util.MessageQueueQuery
 open Util.MessageQueueCommand
 
-let responseTimeoutMilliseconds = System.TimeSpan.FromSeconds(30).TotalMilliseconds |> int
-let responseMaxRetries = 0
+type QueryOptions = { 
+    ResponseTimeout: System.TimeSpan
+    MaxRetries: int }
+with static member Default = {
+        ResponseTimeout = System.TimeSpan.FromSeconds(30)
+        MaxRetries = 0 }
 
-let singleResponseQuery<'RequestArgs, 'ResponseMessage> (requestArgs: 'RequestArgs) (query: Query<'RequestArgs, 'ResponseMessage>): 'ResponseMessage option = 
-    use requester = query.NewRequester()
-    requester.SendRequest requestArgs
+let handleQueryResponse (options: QueryOptions) (query: Query<'RequestArgs, 'ResponseMessage>) (requester: MessageQueueQuery.Requester<'RequestArgs, 'ResponseMessage>) sendRequest =
+    let responseTimeoutMilliseconds = options.ResponseTimeout.TotalMilliseconds |> int
+    sendRequest()
     let rec retryFunc (attempt: int) = 
         try 
             Util.Log.debugInfo $"Sending new request for query {query.QueueName}"
             let task = Async.AwaitEvent requester.NewResponse
             let response = Async.RunSynchronously(task, responseTimeoutMilliseconds)
             match response with
-            | MessageQueueQuery.Response.Success message -> Some message
+            | MessageQueueQuery.Response.Success message -> MessageQueueQuery.Response.Success message
             | MessageQueueQuery.Response.Fail errorDetails -> 
                 Util.Log.error errorDetails
-                None
+                MessageQueueQuery.Response.Fail errorDetails
         with error ->
             Util.Log.error $"Response failed {query.QueueName}. {error.Message}"
-            if attempt < responseMaxRetries then 
+            if attempt < options.MaxRetries then 
                 Util.Log.error $"Retrying {query.QueueName}"
-                requester.SendRequest requestArgs
+                sendRequest()
                 retryFunc (attempt + 1)
-            else None 
+            else 
+                let errorDetails: MessageQueueQuery.Error = {
+                    Code = 1
+                    Responder = "None"
+                    RequestName = query.QueueName
+                    Message = error.Message }
+                MessageQueueQuery.Response.Fail errorDetails 
     retryFunc(0)
 
-let singleResponseQueryNoArgs<'ResponseMessage> (query: Query<unit, 'ResponseMessage>): 'ResponseMessage option = 
+let singleResponseQuery<'RequestArgs, 'ResponseMessage> (options: QueryOptions) (requestArgs: 'RequestArgs) (query: Query<'RequestArgs, 'ResponseMessage>): MessageQueueQuery.Response<'ResponseMessage> = 
     use requester = query.NewRequester()
-    requester.SendRequest()
-    let rec retryFunc (attempt: int) =
-        try 
-            Util.Log.debugInfo $"Sending new request for query {query.QueueName}"
-            let task = Async.AwaitEvent requester.NewResponse
-            let response = Async.RunSynchronously(task, responseTimeoutMilliseconds)
-            match response with
-            | MessageQueueQuery.Response.Success message -> Some message
-            | MessageQueueQuery.Response.Fail errorDetails -> 
-                Util.Log.error errorDetails
-                None
-        with error ->
-            Util.Log.error $"Response failed {query.QueueName}. {error.Message}"
-            if attempt < responseMaxRetries then 
-                Util.Log.error $"Retrying {query.QueueName}"
-                requester.SendRequest()
-                retryFunc (attempt + 1)
-            else None
-    retryFunc(0)
+    handleQueryResponse options query requester (fun _ -> requester.SendRequest requestArgs)
 
-let sendCommand<'RequestArgs> (requestArgs: 'RequestArgs) (command: Command<'RequestArgs>): unit =
-    use requester = command.NewRequester()
-    requester.SendRequest requestArgs
-    let rec retryFunc (attempt: int) = 
-        try 
-            Util.Log.debugInfo $"Sending new request for command {command.QueueName}"
-            let task = Async.AwaitEvent requester.NewResponse
-            let response = Async.RunSynchronously(task, responseTimeoutMilliseconds)
-            match response with
-            | MessageQueueCommand.Response.Success -> ()
-            | MessageQueueCommand.Response.Fail errorDetails -> Util.Log.error errorDetails
-        with error ->
-            Util.Log.error $"Response failed {command.QueueName}. {error.Message}"
-            if attempt < responseMaxRetries then 
-                Util.Log.error $"Retrying {command.QueueName}"
-                requester.SendRequest requestArgs
-                retryFunc (attempt + 1)
-    retryFunc(0)
+let singleResponseQueryNoArgs<'ResponseMessage> (options: QueryOptions) (query: Query<unit, 'ResponseMessage>): MessageQueueQuery.Response<'ResponseMessage> = 
+    use requester = query.NewRequester()
+    handleQueryResponse options query requester (fun _ -> requester.SendRequest())
 
-let sendCommandHandleResponse<'RequestArgs> (requestArgs: 'RequestArgs) (command: Command<'RequestArgs>): MessageQueueCommand.Response =
+type CommandOptions = { 
+    ResponseTimeout: System.TimeSpan
+    MaxRetries: int }
+with static member Default = {
+        ResponseTimeout = System.TimeSpan.FromSeconds(30)
+        MaxRetries = 0 }
+
+let sendCommand<'RequestArgs> (options: CommandOptions) (requestArgs: 'RequestArgs) (command: Command<'RequestArgs>): MessageQueueCommand.Response =
+    let responseTimeoutMilliseconds = options.ResponseTimeout.TotalMilliseconds |> int
     use requester = command.NewRequester()
     requester.SendRequest requestArgs
     let rec retryFunc (attempt: int) = 
@@ -85,7 +70,7 @@ let sendCommandHandleResponse<'RequestArgs> (requestArgs: 'RequestArgs) (command
                 MessageQueueCommand.Response.Fail errorDetails
         with error ->
             Util.Log.error $"Response failed {command.QueueName}. {error.Message}"
-            if attempt < responseMaxRetries then 
+            if attempt < options.MaxRetries then 
                 Util.Log.error $"Retrying {command.QueueName}"
                 requester.SendRequest requestArgs
                 retryFunc (attempt + 1)
