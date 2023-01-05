@@ -70,6 +70,34 @@ let sendCommand<'RequestArgs> (requestArgs: 'RequestArgs) (command: Command<'Req
                 retryFunc (attempt + 1)
     retryFunc(0)
 
+let sendCommandHandleResponse<'RequestArgs> (requestArgs: 'RequestArgs) (command: Command<'RequestArgs>): MessageQueueCommand.Response =
+    use requester = command.NewRequester()
+    requester.SendRequest requestArgs
+    let rec retryFunc (attempt: int) = 
+        try 
+            Util.Log.debugInfo $"Sending new request for command {command.QueueName}"
+            let task = Async.AwaitEvent requester.NewResponse
+            let response = Async.RunSynchronously(task, responseTimeoutMilliseconds)
+            match response with
+            | MessageQueueCommand.Response.Success -> MessageQueueCommand.Response.Success
+            | MessageQueueCommand.Response.Fail errorDetails -> 
+                Util.Log.error errorDetails
+                MessageQueueCommand.Response.Fail errorDetails
+        with error ->
+            Util.Log.error $"Response failed {command.QueueName}. {error.Message}"
+            if attempt < responseMaxRetries then 
+                Util.Log.error $"Retrying {command.QueueName}"
+                requester.SendRequest requestArgs
+                retryFunc (attempt + 1)
+            else
+                let errorDetails: Util.MessageQueueCommand.Error = {
+                    Code = 1
+                    Responder = "None"
+                    RequestName = command.QueueName
+                    Message = error.Message }
+                MessageQueueCommand.Response.Fail errorDetails
+    retryFunc(0)
+
 let bindCommand<'RequestArgs> 
     (handleFunct: 'RequestArgs -> unit) 
     (command: MessageQueueCommand.Command<'RequestArgs>) =
