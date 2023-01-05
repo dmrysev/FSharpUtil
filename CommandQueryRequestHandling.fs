@@ -52,13 +52,23 @@ let singleResponseQueryNoArgs<'ResponseMessage> (query: Query<unit, 'ResponseMes
     retryFunc(0)
 
 let sendCommand<'RequestArgs> (requestArgs: 'RequestArgs) (command: Command<'RequestArgs>): unit =
-    Util.Log.debugInfo $"Sending new command {command.QueueName}"
-    try 
-        let response = command.SendRequest requestArgs
-        match response with
-        | MessageQueueCommand.Response.Success -> ()
-        | MessageQueueCommand.Response.Fail errorDetails -> Util.Log.error errorDetails
-    with error -> Util.Log.error error
+    use requester = command.NewRequester()
+    requester.SendRequest requestArgs
+    let rec retryFunc (attempt: int) = 
+        try 
+            Util.Log.debugInfo $"Sending new request for command {command.QueueName}"
+            let task = Async.AwaitEvent requester.NewResponse
+            let response = Async.RunSynchronously(task, responseTimeoutMilliseconds)
+            match response with
+            | MessageQueueCommand.Response.Success -> ()
+            | MessageQueueCommand.Response.Fail errorDetails -> Util.Log.error errorDetails
+        with error ->
+            Util.Log.error $"Response failed {command.QueueName}. {error.Message}"
+            if attempt < responseMaxRetries then 
+                Util.Log.error $"Retrying {command.QueueName}"
+                requester.SendRequest requestArgs
+                retryFunc (attempt + 1)
+    retryFunc(0)
 
 let bindCommand<'RequestArgs> 
     (handleFunct: 'RequestArgs -> unit) 
