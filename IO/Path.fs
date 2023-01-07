@@ -13,6 +13,7 @@ type FileName (value: string) =
         match other with
         | :? FileName as d -> this.Value = d.Value
         | _ -> false
+    static member None = FileName "none"
 
 type DirectoryName(value: string) =
     do
@@ -24,6 +25,7 @@ type DirectoryName(value: string) =
         match other with
         | :? DirectoryName as d -> this.Value = d.Value
         | _ -> false
+    static member None = DirectoryName "none"
 
 type FilePath(value: string) =
     do 
@@ -34,6 +36,7 @@ type FilePath(value: string) =
         match other with
         | :? FilePath as d -> this.Value = d.Value
         | _ -> false
+    static member None = FilePath "none"
 
 type DirectoryPath(value: string) =
     do
@@ -44,6 +47,7 @@ type DirectoryPath(value: string) =
         match other with
         | :? DirectoryPath as d -> this.Value = d.Value
         | _ -> false
+    static member None = DirectoryPath "none"
 
 type Url (value: string) =
     do
@@ -54,6 +58,7 @@ type Url (value: string) =
         match other with
         | :? Url as u -> this.Value = u.Value
         | _ -> false
+    static member None = Url "none"
 
 let exists (path: string) = System.IO.Directory.Exists path || System.IO.File.Exists path
 let isDirectory (path: string) =
