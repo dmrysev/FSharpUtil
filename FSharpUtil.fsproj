@@ -19,6 +19,7 @@
     <Compile Include="IO/File.fs" />
     <Compile Include="IO/Directory.fs" />
     <Compile Include="IO/Clipboard.fs" />
+    <Compile Include="IO/Media/Image.fs" />
     <Compile Include="IO/Media/Video.fs" />
     <Compile Include="Json.fs" />
     <Compile Include="MessageQueue.fs" />
