@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="API/Web.fs" />
     <Compile Include="Log.fs" />
     <Compile Include="Option.fs" />
     <Compile Include="Guid.fs" />
@@ -28,8 +29,6 @@
     <Compile Include="Seq.fs" />
     <Compile Include="Retry.fs" />
     <Compile Include="Html.fs" />
-    <Compile Include="Http.fs" />
-    <Compile Include="HttpClient.fs" />
     <Compile Include="VersionControl.fs" />
     <Compile Include="Service/Daemon.fs" />
     <Compile Include="Service/MessageQueueMonitor.fs" />
@@ -49,9 +48,6 @@
     <PackageReference Include="ExcelDataReader" Version="3.6.0" />
     <PackageReference Include="fsharp.data" Version="3.3.3" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <PackageReference Include="DotNetTor" Version="2.3.3" />
-    <PackageReference Include="HttpToSocks5Proxy" Version="1.4.0" />
-    <PackageReference Include="Selenium.WebDriver" Version="4.0.0" />
   </ItemGroup>
 
   <ItemGroup>

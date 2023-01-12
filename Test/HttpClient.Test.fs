@@ -1,4 +1,4 @@
-module Util.HttpClient.Test
+module Util.Web.HttpClient.Test
 
 open NUnit.Framework
 open FsUnit

@@ -1,6 +1,5 @@
 module Util.Test
 
-open Util.Http
 open Util.IO.Path
 
 let startLoopAsync func =
