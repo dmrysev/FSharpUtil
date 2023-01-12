@@ -36,8 +36,6 @@
     <Compile Include="MessageQueueCommand.fs" />
     <Compile Include="MessageQueueQuery.fs" />
     <Compile Include="Test.fs" />
-    <Compile Include="Excel/Reader.fs" />
-    <Compile Include="Excel/Writer.fs" />
     <Compile Include="DataAccess/JsonFileDataAccess.fs" />
     <Compile Include="Reflection.fs" />
     <Compile Include="CommandQueryRequestHandling.fs" />
@@ -45,13 +43,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="ExcelDataReader" Version="3.6.0" />
     <PackageReference Include="fsharp.data" Version="3.3.3" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="Excel/WriterCSharp/WriterCSharp.csproj" />
   </ItemGroup>
 
 </Project>
