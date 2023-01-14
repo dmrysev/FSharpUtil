@@ -112,17 +112,30 @@ module TorClient =
 module WebDriver =
     type Config = {
         Tor: TorConfig
-        WebBrowserExePath: FilePath }
+        WebBrowserExePath: FilePath
+        WebDriverLocation: DirectoryPath }
 
-    let init(config: Config) =
+    let initProxySettings (torConfig: TorConfig) =
+        let proxy = OpenQA.Selenium.Proxy()
+        proxy.SocksProxy <- $"{torConfig.Ip}:{torConfig.Port}"
+        proxy.SocksVersion <- 5
+        proxy
+        
+    let initChrome(config: Config) =
         let options = OpenQA.Selenium.Chrome.ChromeOptions()
-        options.DebuggerAddress <- "127.0.0.1:9223"
-        if config.Tor.Enabled then
-            let proxy = OpenQA.Selenium.Proxy()
-            proxy.SocksProxy <- $"{config.Tor.Ip}:{config.Tor.Port}"
-            proxy.SocksVersion <- 5
-            options.Proxy <- proxy
-        new OpenQA.Selenium.Chrome.ChromeDriver(options)
+        if config.Tor.Enabled then options.Proxy <- initProxySettings config.Tor
+        new OpenQA.Selenium.Chrome.ChromeDriver(options) :> OpenQA.Selenium.IWebDriver
+
+    let initChromeRemote(config: Config) (port: int) =
+        let options = OpenQA.Selenium.Chrome.ChromeOptions()
+        options.DebuggerAddress <- $"127.0.0.1:{port}"
+        if config.Tor.Enabled then options.Proxy <- initProxySettings config.Tor
+        new OpenQA.Selenium.Chrome.ChromeDriver(config.WebDriverLocation.Value, options) :> OpenQA.Selenium.IWebDriver
+
+    let initFirefox(config: Config) =
+        let options = OpenQA.Selenium.Firefox.FirefoxOptions()
+        if config.Tor.Enabled then options.Proxy <- initProxySettings config.Tor
+        new OpenQA.Selenium.Firefox.FirefoxDriver(options) :> OpenQA.Selenium.IWebDriver
 
     let loadContent (webDriver: OpenQA.Selenium.IWebDriver) (url: Url) =
         webDriver.Navigate().GoToUrl(url.Value)
