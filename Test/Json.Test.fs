@@ -4,12 +4,14 @@ open Util
 open Util.IO.Path
 open NUnit.Framework
 open FsUnit
+open System
 
 type SimpleMessage = { StringField: string; IntField: int }
 type UnionMessage = ChoiceA | ChoiceB
 type SimpleTypesUnionMessage = ChoiceA of string | ChoiceB of int
 type OptionTypeMessage = { StringField: string option }
-type ComplexTypeMessage = { Path: FilePath }
+type ComplexTypeMessage = { Path: FilePath; Timestamp: DateTime }
+with static member Default = { Path = FilePath "/some/path/file.jpg"; Timestamp = DateTime(2010, 8, 18, 16, 32, 0) }
 type ComplexTypesUnionMessage = ChoiceA of SimpleMessage | ChoiceB of ComplexTypeMessage
 
 [<Test>]
@@ -65,7 +67,7 @@ let ``Json serialization must support option types``() =
 [<Test>]
 let ``Json serialization must support complex types``() =
     // ARRANGE
-    let testMessage: ComplexTypeMessage = { Path = FilePath "/some/path/file.jpg" }
+    let testMessage = ComplexTypeMessage.Default
     // ACT
     let jsonString = testMessage |> Json.toJson
     let resultMessage = Json.fromJson<ComplexTypeMessage> jsonString
@@ -78,7 +80,7 @@ let ``Json serialization must support complex types``() =
 let ``Json serialization must support union of complex types``() =
     // ARRANGE
     let testMessageA = ComplexTypesUnionMessage.ChoiceA { StringField = "test string"; IntField = 100 }
-    let testMessageB = ComplexTypesUnionMessage.ChoiceB { Path = FilePath "/some/path/file.jpg" }
+    let testMessageB = ComplexTypesUnionMessage.ChoiceB ComplexTypeMessage.Default
 
     // ACT
     let resultMessageA = testMessageA |> Json.toJson |> Json.fromJson<ComplexTypesUnionMessage>
