@@ -13,6 +13,7 @@ type FileName (value: string) =
         match other with
         | :? FileName as d -> this.Value = d.Value
         | _ -> false
+    override this.ToString() = value
     static member None = FileName "none"
 
 type DirectoryName(value: string) =
@@ -25,17 +26,19 @@ type DirectoryName(value: string) =
         match other with
         | :? DirectoryName as d -> this.Value = d.Value
         | _ -> false
+    override this.ToString() = value
     static member None = DirectoryName "none"
 
 type FilePath(value: string) =
     do 
         if value = "" then raise (System.ArgumentException "Path can't be empty")
     member this.Value = value
-    override this.GetHashCode () = this.Value.GetHashCode()
+    override this.GetHashCode() = this.Value.GetHashCode()
     override this.Equals other =
         match other with
         | :? FilePath as d -> this.Value = d.Value
         | _ -> false
+    override this.ToString() = value
     static member None = FilePath "none"
 
 type DirectoryPath(value: string) =
@@ -47,6 +50,7 @@ type DirectoryPath(value: string) =
         match other with
         | :? DirectoryPath as d -> this.Value = d.Value
         | _ -> false
+    override this.ToString() = value
     static member None = DirectoryPath "none"
 
 type Url (value: string) =
@@ -58,6 +62,7 @@ type Url (value: string) =
         match other with
         | :? Url as u -> this.Value = u.Value
         | _ -> false
+    override this.ToString() = value
     static member None = Url "none"
 
 let exists (path: string) = System.IO.Directory.Exists path || System.IO.File.Exists path

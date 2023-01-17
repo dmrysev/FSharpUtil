@@ -1,4 +1,5 @@
 module Util.String
+
 open System.Text.RegularExpressions
 
 let extractInt text = Regex.Match(text, @"\d+").Value |> int
