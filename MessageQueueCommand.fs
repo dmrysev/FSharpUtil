@@ -13,6 +13,12 @@ type Command<'RequestArgs> (queueName: string, ?config: Config) =
         let requestQueueName = $"{queueName}/request/{recieverId}"
         Util.MessageQueue.ensureQueueInitialized requestQueueName
         new Requester<'RequestArgs>(queueName, recieverId, config.ResponseTimeout, config.ResponseMaxRetries)
+    member this.SendRequestAsync args = async {
+        let recieverId = Util.Guid.generate()
+        let requestQueueName = $"{queueName}/request/{recieverId}"
+        Util.MessageQueue.ensureQueueInitialized requestQueueName
+        use requester = new Requester<'RequestArgs>(queueName, recieverId, config.ResponseTimeout, config.ResponseMaxRetries)
+        do! requester.SendRequestAsync args }
     member this.SendRequest args =
         let recieverId = Util.Guid.generate()
         let requestQueueName = $"{queueName}/request/{recieverId}"
@@ -54,6 +60,9 @@ and Requester<'RequestArgs> (
             (messageQueueMonitor :> System.IDisposable).Dispose()
             Util.MessageQueue.removeQueue requestQueueName
             Util.MessageQueue.removeQueue responseQueueName
+    member this.SendRequestAsync (requestArgs: 'RequestArgs) = async {
+        currentRequestArgs <- Some requestArgs
+        do! requestArgs |> toJson |> Util.MessageQueue.enqueueAsync requestQueueName }
     member this.SendRequest (requestArgs: 'RequestArgs) =
         currentRequestArgs <- Some requestArgs
         requestArgs |> toJson |> Util.MessageQueue.enqueue requestQueueName
