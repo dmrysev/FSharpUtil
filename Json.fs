@@ -8,6 +8,7 @@ let defaultSettings =
     settings.ReferenceLoopHandling <- ReferenceLoopHandling.Error
     settings
 let toJson message = JsonConvert.SerializeObject(message, defaultSettings)
+let toJsonIndented message = JsonConvert.SerializeObject(message, Formatting.Indented, defaultSettings)
 let fromJson<'a> json = JsonConvert.DeserializeObject<'a>(json, defaultSettings)
 let parse text = Linq.JObject.Parse text
 let read (jsonFilePath: FilePath) = Util.IO.File.readAllText jsonFilePath |> parse
