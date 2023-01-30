@@ -28,3 +28,8 @@ let commit (workingDirectory: DirectoryPath) (message: string) =
     let command = sprintf "git commit -a -m '%s'" message
     let proc = run workingDirectory command
     proc.WaitForExit()
+
+let currentRevision (workingDirectory: DirectoryPath) =
+    let command = "git rev-parse HEAD"
+    let proc = run workingDirectory command
+    proc.WaitForExit()
