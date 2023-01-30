@@ -3,11 +3,12 @@ module Util.VersionControl
 open Util.IO.Path
 
 let run (workingDirectory: DirectoryPath) (command: string) =
-    use p = new System.Diagnostics.Process()
-    p.StartInfo.RedirectStandardOutput <- false
-    p.StartInfo.UseShellExecute <- false
+    use p = 
+        new System.Diagnostics.Process()
+        |> Util.Process.noRedirect
     p.StartInfo.WorkingDirectory <- workingDirectory.Value
     let p = p |> Util.Process.useBash command
+    p.Start() |> ignore
     p.WaitForExit()
 
 let evaluate (workingDirectory: DirectoryPath) (command: string) =
