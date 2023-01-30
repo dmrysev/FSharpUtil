@@ -3,33 +3,31 @@ module Util.VersionControl
 open Util.IO.Path
 
 let run (workingDirectory: DirectoryPath) (command: string) =
-    let p = new System.Diagnostics.Process()
+    use p = new System.Diagnostics.Process()
     p.StartInfo.RedirectStandardOutput <- false
     p.StartInfo.UseShellExecute <- false
     p.StartInfo.WorkingDirectory <- workingDirectory.Value
-    p.StartInfo.FileName <- "/bin/bash"
-    let arguments = sprintf "-c \"%s\"" command
-    p.StartInfo.Arguments <- arguments
-    p.Start() |> ignore    
-    p
+    let p = p |> Util.Process.useBash command
+    p.WaitForExit()
+
+let evaluate (workingDirectory: DirectoryPath) (command: string) =
+    use p = new System.Diagnostics.Process()
+    p.StartInfo.WorkingDirectory <- workingDirectory.Value
+    p 
+    |> Util.Process.useBash command
+    |> Util.Process.getOutput
 
 let add (filePath: FilePath) = 
     let workingDirectory = filePath |> FilePath.directoryPath
     let command = sprintf "git add %s" filePath.Value
-    let proc = run workingDirectory command
-    proc.WaitForExit()
+    run workingDirectory command
 
 let addAll (workingDirectory: DirectoryPath) =
     let command = sprintf "git add ."
-    let proc = run workingDirectory command
-    proc.WaitForExit()
+    run workingDirectory command
 
 let commit (workingDirectory: DirectoryPath) (message: string) = 
     let command = sprintf "git commit -a -m '%s'" message
-    let proc = run workingDirectory command
-    proc.WaitForExit()
+    run workingDirectory command
 
-let currentRevision (workingDirectory: DirectoryPath) =
-    let command = "git rev-parse HEAD"
-    let proc = run workingDirectory command
-    proc.WaitForExit()
+let currentRevision (workingDirectory: DirectoryPath) = evaluate workingDirectory "git rev-parse HEAD"

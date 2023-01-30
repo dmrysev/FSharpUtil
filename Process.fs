@@ -1,5 +1,11 @@
 module Util.Process
 
+let useBash (command: string) (p: System.Diagnostics.Process) =
+    p.StartInfo.FileName <- "/bin/bash"
+    let arguments = sprintf "-c \"%s\"" command
+    p.StartInfo.Arguments <- arguments
+    p
+
 let useBashScript (command: string) (p: System.Diagnostics.Process) =
     let guid = System.Guid.NewGuid().ToString()
     let temporaryScriptFile = "/tmp/" + guid + ".sh"
@@ -15,19 +21,14 @@ let noRedirect (p: System.Diagnostics.Process) =
     p.StartInfo.RedirectStandardError <- false
     p
 
-let run (command: string) =
-    use p = 
-        new System.Diagnostics.Process()
-        |> useBashScript command
-        |> noRedirect
-    p.Start() |> ignore    
-    p
-
-let execute (command: string) =
-    use p = new System.Diagnostics.Process() |> useBashScript command
+let redirectOutput (p: System.Diagnostics.Process) =
     p.StartInfo.RedirectStandardOutput <- true
     p.StartInfo.RedirectStandardError <- true
     p.StartInfo.UseShellExecute <- false
+    p
+
+let getOutput (p: System.Diagnostics.Process) =
+    let p = p |> redirectOutput
     p.Start() |> ignore    
     let reader = p.StandardOutput
     let output = reader.ReadToEnd()
@@ -37,6 +38,16 @@ let execute (command: string) =
     if errorOutput <> "" then raise (System.SystemException errorOutput)
     if output.EndsWith("\n") then output.Remove(output.Length - 1)
     else output
+
+let run (command: string) =
+    use p = 
+        new System.Diagnostics.Process()
+        |> useBashScript command
+        |> noRedirect
+    p.Start() |> ignore    
+    p
+
+let execute (command: string) = new System.Diagnostics.Process() |> useBashScript command |> getOutput
 
 let executeNoOutput (command: string) =
     use p = 
