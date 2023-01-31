@@ -1,5 +1,7 @@
 module Util.IO.Path
 
+open Newtonsoft.Json
+
 let invalidCharacters = ['/'; '<'; '>'; ':'; '"'; '/'; '\\'; '|'; '?'; '*']
 let directorySparator = System.IO.Path.DirectorySeparatorChar
 
@@ -85,6 +87,7 @@ module FileName =
         let extension = fileName |> extension
         fileName.Value |> Util.String.remove extension |> FileName
     let remove (toRemove: string) (fileName: FileName) = fileName.Value |> Util.String.remove toRemove |> FileName
+    let parseJsonObj (json: obj) = json |> string |> JsonConvert.DeserializeObject<FileName>
 
 module DirectoryName =
     let value (dirName: DirectoryName) = dirName.Value
@@ -108,6 +111,7 @@ module FilePath =
     let hasDirectoryPath (filePath: FilePath) =
         let dirPath = System.IO.Path.GetDirectoryName filePath.Value
         dirPath <> ""
+    let parseJsonObj (json: obj) = json |> string |> JsonConvert.DeserializeObject<FilePath>
 
 module DirectoryPath =
     let value (dirPath: DirectoryPath) = dirPath.Value
@@ -122,6 +126,7 @@ module DirectoryPath =
         let parent = System.IO.Directory.GetParent dirPath.Value
         parent.ToString() |> DirectoryPath
     let realPath (dirPath: DirectoryPath) = realPath dirPath.Value |> DirectoryPath
+    let parseJsonObj (json: obj) = json |> string |> JsonConvert.DeserializeObject<DirectoryPath>
 
 type DirectoryPath with
     static member (/) (path1: DirectoryPath, path2: DirectoryPath) = 
@@ -175,3 +180,4 @@ module Url =
         url.Value
         |> Util.String.remove toRemove
         |> Url
+    let parseJsonObj (json: obj) = json |> string |> JsonConvert.DeserializeObject<Url>

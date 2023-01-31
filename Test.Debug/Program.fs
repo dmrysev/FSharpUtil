@@ -1,7 +1,4 @@
 ﻿open Util
 open Util.IO.Path
 
-printfn "Start"
-// Util.Test.MessageQueueRequest.``Read request must be handled and recieve response``() 
-// Util.Test.MessageQueueRequest.``Read request must be handled and recieve response 2``()
-printfn "End"
+Util.Test.Json.``Json serialization must support dictionary of string key and obj value``()

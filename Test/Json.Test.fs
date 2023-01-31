@@ -2,6 +2,7 @@ module Util.Test.Json
 
 open Util
 open Util.IO.Path
+open Util.Json
 open NUnit.Framework
 open FsUnit
 open System
@@ -13,6 +14,8 @@ type OptionTypeMessage = { StringField: string option }
 type ComplexTypeMessage = { Path: FilePath; Timestamp: DateTime }
 with static member Default = { Path = FilePath "/some/path/file.jpg"; Timestamp = DateTime(2010, 8, 18, 16, 32, 0) }
 type ComplexTypesUnionMessage = ChoiceA of SimpleMessage | ChoiceB of ComplexTypeMessage
+type DictTypeMessage = { Dict: Collections.IDictionary } 
+with static member Default = { Dict = Collections.Generic.Dictionary<string,obj>() }
 
 [<Test>]
 let ``Json serialization must support simple types``() =
@@ -68,6 +71,7 @@ let ``Json serialization must support option types``() =
 let ``Json serialization must support complex types``() =
     // ARRANGE
     let testMessage = ComplexTypeMessage.Default
+
     // ACT
     let jsonString = testMessage |> Json.toJson
     let resultMessage = Json.fromJson<ComplexTypeMessage> jsonString
@@ -102,3 +106,22 @@ let ``Json serialization must support byte array``() =
 
     // ASSERT
     resultBytes |> should equal testBytes
+
+[<Test>]
+let ``Json serialization must support dictionary of string key and obj value``() =
+    // ARRANGE
+    let testMessage = DictTypeMessage.Default
+    testMessage.Dict["Key1"] <- "Value1"
+    testMessage.Dict["Key2"] <- 33
+    testMessage.Dict["Key3"] <- FilePath "/some/path/file.jpg"
+    testMessage.Dict["Key4"] <- Url "https://somewhere.com"
+
+    // ACT
+    let jsonString = testMessage |> Json.toJson
+    let resultMessage = Json.fromJson<DictTypeMessage> jsonString
+
+    // ASSERT
+    resultMessage.Dict["Key1"] |> should equal testMessage.Dict["Key1"]
+    resultMessage.Dict["Key2"] |> should equal testMessage.Dict["Key2"]
+    resultMessage.Dict["Key3"] |> FilePath.parseJsonObj |> should equal testMessage.Dict["Key3"]
+    resultMessage.Dict["Key4"] |> Url.parseJsonObj |> should equal testMessage.Dict["Key4"]
