@@ -8,14 +8,12 @@ let test1() =
     let timeoutMilliseconds = timeout.TotalMilliseconds |> int
     // let test i = 
     //     while true do
-    //         printfn $"{i}"
     //         // Util.IO.Directory.countFiles (DirectoryPath "/tmp/cb045d48-ac03-4dc2-b5d2-565aa32e70af/media/api/download_status/new_status/request") |> ignore 
     //         do! Async.Sleep timeoutMilliseconds
     //         // Threading.Thread.Sleep timeoutMilliseconds
     let test i = async { 
         do! Async.Sleep 10
         while true do
-            // printfn $"{i}"
             Util.IO.Directory.exists (DirectoryPath "/tmp/cb045d48-ac03-4dc2-b5d2-565aa32e70af/media/api/download_status/new_status/request") |> ignore 
             do! Async.Sleep timeoutMilliseconds
             // Threading.Thread.Sleep timeoutMilliseconds

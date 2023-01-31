@@ -8,18 +8,6 @@ open System.Threading
 open MihaZupan
 open OpenQA.Selenium.Firefox
 
-let withRetryOnHttpRequestFail (delay: System.TimeSpan) (maximumAttempts: int) func onError =
-    let rec tryRun(attempt: int) =
-        try func()
-        with 
-        | :? System.Net.Http.HttpRequestException as error ->
-            onError error
-            if attempt = maximumAttempts then raise error
-            printfn "Error %s. Attempt %i. Will try again in %A" error.Message attempt delay
-            Thread.Sleep delay
-            tryRun(attempt + 1)
-    tryRun(1)
-
 let getHtmlContentAsync (httpClient: HttpClient) (config: HttpConfig) (url: Url) =
     let httpErrorEvent = Event<HttpErrorDetails>()
     let events = { Events.HttpError = httpErrorEvent.Publish }
