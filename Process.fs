@@ -44,8 +44,8 @@ let run (command: string) =
         new System.Diagnostics.Process()
         |> useBashScript command
         |> noRedirect
-    p.Start() |> ignore    
-    p
+    p.Start() |> ignore
+    p.WaitForExit()
 
 let execute (command: string) = new System.Diagnostics.Process() |> useBashScript command |> getOutput
 
