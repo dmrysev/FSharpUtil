@@ -5,6 +5,7 @@ open System.Text.RegularExpressions
 let extractInt text = Regex.Match(text, @"\d+").Value |> int
 let replace (oldValue: string) (newValue: string) (text: string) = text.Replace(oldValue, newValue)
 let split (separator: string) (text: string) = text.Split([|separator|], System.StringSplitOptions.None)
+let toUpper (str: string) = str.ToUpper()
 let toLower (str: string) = str.ToLower()
 let removeLastCharacters (count: int) (str: string) = str.Remove(str.Length - count)
 let removeLastCharacter (str: string) = str.Remove(str.Length - 1)
