@@ -4,7 +4,7 @@ open Util.IO.Path
 
 module Info =
     let duration (filePath: FilePath) = 
-        $"ffprobe -i '{filePath.Value}' -show_entries format=duration -v quiet -of csv='p=0'"
+        $"ffprobe -i '{filePath.Value}' -show_entries format=duration -v error -of csv='p=0'"
         |> Util.Process.execute 
         |> double
         |> System.TimeSpan.FromSeconds
