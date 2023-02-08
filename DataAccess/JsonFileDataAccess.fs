@@ -16,7 +16,6 @@ type JsonFileDataAccess (dataEntriesDirPath: DirectoryPath) =
         else
             let dirInfo = System.IO.DirectoryInfo(dataEntriesDirPath.Value)
             dirInfo.EnumerateFiles()
-            |> Seq.sortBy (fun x -> x.CreationTimeUtc)
             |> Seq.map (fun x -> x.FullName |> Util.IO.Path.FilePath |> Util.IO.File.readAllText)
 
     member this.Write (id: string) (jsonString: string) =

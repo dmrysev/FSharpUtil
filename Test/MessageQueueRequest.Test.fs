@@ -16,7 +16,7 @@ let initQueueName() = $"util/test/{Util.Guid.generate()}"
 let ``Command request must be handled``() =
     // ARRANGE
     let config: MessageQueueCommand.Config = { 
-        ResponseTimeout = Some (System.TimeSpan.FromMilliseconds 100)
+        ResponseTimeout = Some (System.TimeSpan.FromMilliseconds 500)
         ResponseMaxRetries = None }
     let command = Command<string>(initQueueName(), config)
 

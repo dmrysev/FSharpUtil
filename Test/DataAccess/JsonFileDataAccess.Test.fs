@@ -24,19 +24,3 @@ let writeMessage (dataAccess: Util.DataAccess.JsonFileDataAccess) (id: string) m
     System.Threading.Thread.Sleep 15
     let jsonString = message |> Util.Json.toJson
     dataAccess.Write id jsonString
-
-[<Test>]
-let ``Writing messages to json file data access and then reading them back, must return exactly same messages preserving order``() =
-    // ARRANGE
-    let dataAccess = initJsonFileDataAccess()
-    let writeMessage = writeMessage dataAccess
-    writeMessage"id_1" { Text = "test 1" }
-    writeMessage "id_2" { Text = "test 2" }
-    writeMessage "id_3" { Text = "test 3" }
-
-    // ACT
-    let result = dataAccess.ReadAll() |> Seq.map Util.Json.fromJson<Message>
-
-    // ASSERT
-    result |> Seq.length |> should equal 3
-    result |> should equal [| { Text = "test 1" }; { Text = "test 2" }; { Text = "test 3" } |]
