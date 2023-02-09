@@ -27,6 +27,7 @@
     <Compile Include="Math.fs" />
     <Compile Include="StringMatch.fs" />
     <Compile Include="Seq.fs" />
+    <Compile Include="Map.fs" />
     <Compile Include="Html.fs" />
     <Compile Include="VersionControl.fs" />
     <Compile Include="Service/Daemon.fs" />
