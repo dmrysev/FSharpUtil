@@ -25,3 +25,8 @@ let tryFindItem item items =
     match items |> Seq.tryFindIndex (fun x -> x = item) with
     | Some index -> items |> Seq.item index |> Some
     | None -> None
+
+let tryFindItemBy predicate items =
+    match items |> Seq.tryFindIndex predicate with
+    | Some index -> items |> Seq.item index |> Some
+    | None -> None
