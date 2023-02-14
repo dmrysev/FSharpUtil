@@ -1,6 +1,7 @@
 module Util.Reflection
 
 open Util.IO.Path
+open FSharp.Reflection
 open System
 open System.Reflection
 
@@ -18,3 +19,17 @@ let loadPlugins<'a>(pluginsDirPath: DirectoryPath) =
     else Seq.empty
 
 let currentExecutableFilePath() = System.Reflection.Assembly.GetExecutingAssembly().Location |> FilePath
+
+module Union =
+    let toString (x:'a) = 
+        match FSharpValue.GetUnionFields(x, typeof<'a>) with
+        | case, _ -> case.Name
+    let fromString<'a> (s:string) =
+        match FSharpType.GetUnionCases typeof<'a> |> Array.filter (fun case -> case.Name = s) with
+        |[|case|] -> FSharpValue.MakeUnion(case,[||]) :?> 'a
+        |_ -> raise (ArgumentException($"{s}"))    
+
+    let tryFromString<'a> (s:string) =
+        match FSharpType.GetUnionCases typeof<'a> |> Array.filter (fun case -> case.Name = s) with
+        |[|case|] -> Some(FSharpValue.MakeUnion(case,[||]) :?> 'a)
+        |_ -> None        
