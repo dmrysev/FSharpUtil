@@ -40,6 +40,7 @@
     <Compile Include="Reflection.fs" />
     <Compile Include="CommandQueryRequestHandling.fs" />
     <Compile Include="Compression.fs" />
+    <Compile Include="Memoization.fs" />
   </ItemGroup>
 
   <ItemGroup>
