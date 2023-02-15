@@ -30,3 +30,7 @@ let tryFindItemBy predicate items =
     match items |> Seq.tryFindIndex predicate with
     | Some index -> items |> Seq.item index |> Some
     | None -> None
+
+let append item items = Seq.append items [item]
+
+let tailN n items = items |> Seq.skip (Seq.length items - n)
