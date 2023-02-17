@@ -154,6 +154,8 @@ type FilePath with
         let dirPath = filePath |> FilePath.directoryPath
         dirPath/newFileName
 
+type Path = Path of string
+
 type Url with
     static member (/) (urlPath1: Url, urlPath2: Url) = 
         let combined = sprintf "%s/%s" urlPath1.Value urlPath2.Value
@@ -181,3 +183,7 @@ module Url =
         |> Util.String.remove toRemove
         |> Url
     let parseJsonObj (json: obj) = json |> string |> JsonConvert.DeserializeObject<Url>
+
+let toFilePath (path: Path) = path |> string |> FilePath
+let toDirectoryPath (path: Path) = path |> string |> DirectoryPath
+let toUrl (path: Path) = path |> string |> Url
