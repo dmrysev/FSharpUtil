@@ -67,6 +67,9 @@ type Url (value: string) =
     override this.ToString() = value
     static member None = Url "none"
 
+type Path = Path of string
+type PathType = Directory of DirectoryPath | File of FilePath
+
 let exists (path: string) = System.IO.Directory.Exists path || System.IO.File.Exists path
 let isDirectory (path: string) =
     let attributes = System.IO.File.GetAttributes path
@@ -76,6 +79,14 @@ let realPath (path: string) = Util.Process.execute $"realpath '{path}'"
 let isSymbolicLink (path: string) =
     let pathInfo = System.IO.FileInfo path
     pathInfo.Attributes.HasFlag(System.IO.FileAttributes.ReparsePoint)  
+
+let toFilePath (path: Path) = path |> string |> FilePath
+let toDirectoryPath (path: Path) = path |> string |> DirectoryPath
+let toUrl (path: Path) = path |> string |> Url
+
+let pathType (path: Path) =
+    if path |> string |> isDirectory then path |> toDirectoryPath |> PathType.Directory
+    else path |> toFilePath |> PathType.File
 
 module FileName =
     let value (fileName: FileName) = fileName.Value
@@ -112,6 +123,8 @@ module FilePath =
         let dirPath = System.IO.Path.GetDirectoryName filePath.Value
         dirPath <> ""
     let parseJsonObj (json: obj) = json |> string |> JsonConvert.DeserializeObject<FilePath>
+    let hasVideoExtension (filePath: FilePath) = filePath.Value |> Util.StringMatch.isVideoFile
+    let hasImageExtension (filePath: FilePath) = filePath.Value |> Util.StringMatch.isImageFile
 
 module DirectoryPath =
     let value (dirPath: DirectoryPath) = dirPath.Value
@@ -154,8 +167,6 @@ type FilePath with
         let dirPath = filePath |> FilePath.directoryPath
         dirPath/newFileName
 
-type Path = Path of string
-
 type Url with
     static member (/) (urlPath1: Url, urlPath2: Url) = 
         let combined = sprintf "%s/%s" urlPath1.Value urlPath2.Value
@@ -183,7 +194,3 @@ module Url =
         |> Util.String.remove toRemove
         |> Url
     let parseJsonObj (json: obj) = json |> string |> JsonConvert.DeserializeObject<Url>
-
-let toFilePath (path: Path) = path |> string |> FilePath
-let toDirectoryPath (path: Path) = path |> string |> DirectoryPath
-let toUrl (path: Path) = path |> string |> Url
