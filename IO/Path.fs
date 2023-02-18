@@ -67,8 +67,7 @@ type Url (value: string) =
     override this.ToString() = value
     static member None = Url "none"
 
-type Path = Path of string
-type PathType = Directory of DirectoryPath | File of FilePath
+type Path = File of FilePath | Directory of DirectoryPath
 
 let exists (path: string) = System.IO.Directory.Exists path || System.IO.File.Exists path
 let isDirectory (path: string) =
@@ -78,15 +77,12 @@ let isAbsolute path = path |> Util.String.startsWith (string directorySparator)
 let realPath (path: string) = Util.Process.execute $"realpath '{path}'"
 let isSymbolicLink (path: string) =
     let pathInfo = System.IO.FileInfo path
-    pathInfo.Attributes.HasFlag(System.IO.FileAttributes.ReparsePoint)  
+    pathInfo.Attributes.HasFlag(System.IO.FileAttributes.ReparsePoint)
 
-let toFilePath (path: Path) = path |> string |> FilePath
-let toDirectoryPath (path: Path) = path |> string |> DirectoryPath
-let toUrl (path: Path) = path |> string |> Url
-
-let pathType (path: Path) =
-    if path |> string |> isDirectory then path |> toDirectoryPath |> PathType.Directory
-    else path |> toFilePath |> PathType.File
+let isInside (dirPath: DirectoryPath) (path: Path) =
+    match path with
+    | File path -> path.Value |> Util.String.startsWith dirPath.Value
+    | Directory path -> path.Value |> Util.String.startsWith dirPath.Value
 
 module FileName =
     let value (fileName: FileName) = fileName.Value
