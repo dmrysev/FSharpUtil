@@ -93,6 +93,18 @@ let modificationTime (path: Path) =
         let dirInfo = System.IO.DirectoryInfo (path.Value)
         dirInfo.LastWriteTime
 
+let size (path: Path) =
+    match path with
+    | File path -> 
+        let fileInfo = System.IO.FileInfo (path.Value)
+        fileInfo.Length
+    | Directory path -> 
+        System.IO.Directory.EnumerateFiles(path.Value, "*", System.IO.SearchOption.AllDirectories)
+        |> Seq.map (fun filePath ->
+            let fileInfo = System.IO.FileInfo (filePath)
+            fileInfo.Length)
+        |> Seq.sum
+
 module FileName =
     let value (fileName: FileName) = fileName.Value
     let extension(fileName: FileName) = System.IO.Path.GetExtension fileName.Value
