@@ -84,6 +84,15 @@ let isInside (dirPath: DirectoryPath) (path: Path) =
     | File path -> path.Value |> Util.String.startsWith dirPath.Value
     | Directory path -> path.Value |> Util.String.startsWith dirPath.Value
 
+let modificationTime (path: Path) =
+    match path with
+    | File path -> 
+        let fileInfo = System.IO.FileInfo (path.Value)
+        fileInfo.LastWriteTime
+    | Directory path -> 
+        let dirInfo = System.IO.DirectoryInfo (path.Value)
+        dirInfo.LastWriteTime
+
 module FileName =
     let value (fileName: FileName) = fileName.Value
     let extension(fileName: FileName) = System.IO.Path.GetExtension fileName.Value
