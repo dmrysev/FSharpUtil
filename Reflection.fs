@@ -32,4 +32,9 @@ module Union =
     let tryFromString<'a> (s:string) =
         match FSharpType.GetUnionCases typeof<'a> |> Array.filter (fun case -> case.Name = s) with
         |[|case|] -> Some(FSharpValue.MakeUnion(case,[||]) :?> 'a)
-        |_ -> None        
+        |_ -> None
+
+    let casesStrings<'a>() =
+        typeof<'a>
+        |> FSharp.Reflection.FSharpType.GetUnionCases
+        |> Seq.map (fun x -> x.Name) 
