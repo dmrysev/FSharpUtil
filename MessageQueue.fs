@@ -54,6 +54,10 @@ let rec resetQueue queueName =
 
 let ensureQueueInitialized queueName = if not (queueName |> isQueueInitialized) then resetQueue queueName
 
+let initQueue queueName = 
+    ensureQueueInitialized queueName
+    queueName
+
 let listQueueTree queueName =
     let queueDirPath = getQueueDirPath queueName
     if not (Util.IO.Directory.exists queueDirPath) then Seq.empty
@@ -209,6 +213,14 @@ let rec dequeueAsync queueName =
 let dequeue queueName =
     dequeueAsync queueName |> Async.RunSynchronously
 
+let dequeueAllAsync queueName = async {
+    let messages = System.Collections.Generic.List<string>()
+    while hasMessages queueName do 
+        match! dequeueAsync queueName with
+        | Some message -> messages.Add message
+        | None -> ()
+    return messages |> List.ofSeq }
+
 let persist queueName destinationPath = async {
     let queueDirPath = getQueueDirPath queueName
     Util.IO.Directory.copy queueDirPath destinationPath }
@@ -222,3 +234,25 @@ let rec periodicPersistence queueNames destinationDirPath (timeSpan: System.Time
     |> Async.RunSynchronously
     |> ignore
     do! periodicPersistence queueNames destinationDirPath timeSpan }
+
+type Queue<'MessageType>(queueName) =
+    do
+        ensureQueueInitialized queueName
+    member val QueueName = queueName
+    member this.EnqueueAsync (message: 'MessageType) = async {
+        let messageString = Util.Json.toJson message
+        do! enqueueAsync queueName messageString }
+    member this.Enqueue (message: 'MessageType) = 
+        this.EnqueueAsync message |> Async.RunSynchronously
+    member this.DequeueAsync () = async {
+        match! dequeueAsync queueName with
+        | Some messageString ->
+            let message = Util.Json.fromJson<'MessageType> messageString
+            return Some message
+        | None -> return None }
+    member this.Dequeue () =
+        this.DequeueAsync() |> Async.RunSynchronously
+    member this.DequeueAllAsync () = async {
+        let! stringMessages = dequeueAllAsync queueName
+        let messages = stringMessages |> List.map Util.Json.fromJson<'MessageType>
+        return messages }
