@@ -79,3 +79,7 @@ let openWithDefaultApplication (filePath: FilePath) =
     if Util.Environment.OS.isLinux() then
         Util.Process.executeNoOutput $"xdg-open {filePath.Value} &"
     else raise (System.NotImplementedException())
+
+let size (filePath: FilePath) =
+    let fileInfo = System.IO.FileInfo (filePath.Value)
+    fileInfo.Length
