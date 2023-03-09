@@ -95,3 +95,7 @@ let readBytesAsync (filePath: FilePath) = async { return readBytes filePath }
 
 let writeBytes (filePath: FilePath) (bytes: byte array) = 
     System.IO.File.WriteAllBytes(filePath.Value, bytes)
+
+let modificationTime (filePath: FilePath) =
+    let fileInfo = System.IO.FileInfo (filePath.Value)
+    fileInfo.LastWriteTime
