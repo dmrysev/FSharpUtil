@@ -83,3 +83,5 @@ let openWithDefaultApplication (filePath: FilePath) =
 let size (filePath: FilePath) =
     let fileInfo = System.IO.FileInfo (filePath.Value)
     fileInfo.Length
+
+let readBytes (filePath: FilePath) = System.IO.File.ReadAllBytes(filePath.Value)
