@@ -35,3 +35,5 @@ let appendItem item items = Seq.append items [item]
 let prependItem item items = Seq.append [item] items
 
 let tailN n items = items |> Seq.skip (Seq.length items - n)
+
+let lastIndex items = Seq.length items - 1
