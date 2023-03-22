@@ -46,6 +46,11 @@ let move (sourceFilePath: FilePath) (destinationPath: string) =
         System.IO.Directory.CreateDirectory dirPath.Value |> ignore
         System.IO.File.Move (sourceFilePath.Value, destinationPath.Value)
 
+let moveToDirectory (sourceFilePath: FilePath) (destinationDirPath: DirectoryPath) =
+    let fileName = sourceFilePath |> FilePath.fileName
+    let destinationFilePath = destinationDirPath/fileName
+    System.IO.File.Move(sourceFilePath.Value, destinationFilePath.Value)
+
 let delete (path: FilePath) = System.IO.File.Delete path.Value
 
 let copy (sourceFilePath: FilePath) destinationPath = 
