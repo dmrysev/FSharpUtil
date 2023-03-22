@@ -18,11 +18,13 @@
     <Compile Include="StringMatch.fs" />
     <Compile Include="IO/Path.fs" />
     <Compile Include="Environment.fs" />
+    <Compile Include="Compression.fs" />
     <Compile Include="IO/File.fs" />
     <Compile Include="IO/Directory.fs" />
     <Compile Include="IO/Clipboard.fs" />
     <Compile Include="IO/Media/Image.fs" />
     <Compile Include="IO/Media/Video.fs" />
+    <Compile Include="IO/Media/Ebook.fs" />
     <Compile Include="Json.fs" />
     <Compile Include="MessageQueue.fs" />
     <Compile Include="Math.fs" />
@@ -39,7 +41,6 @@
     <Compile Include="DataAccess/JsonFileDataAccess.fs" />
     <Compile Include="Reflection.fs" />
     <Compile Include="CommandQueryRequestHandling.fs" />
-    <Compile Include="Compression.fs" />
     <Compile Include="Memoization.fs" />
   </ItemGroup>
 
