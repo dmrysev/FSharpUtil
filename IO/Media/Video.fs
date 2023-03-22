@@ -31,16 +31,12 @@ module Screenshot =
         createManyAsync inputVideoFilePath chunksCount outputDirPath |> Async.Parallel |> Async.RunSynchronously |> ignore
 
 module Format =
-    type TimestampRange = { 
-        Start: System.TimeSpan
-        End: System.TimeSpan }
-
-    let cutByTimestampRange (inputVideoFilePath: FilePath) (timestampRange: TimestampRange) (outputVideoFilePath: FilePath) =
+    let cutByTimestampRange (inputVideoFilePath: FilePath) (timestampRange: Util.Time.TimeSpanRange) (outputVideoFilePath: FilePath) =
         $"ffmpeg -ss {timestampRange.Start} -to {timestampRange.End} -i {inputVideoFilePath.Value} -c copy -v error -y {outputVideoFilePath.Value}"
         |> Util.Process.execute
         |> ignore         
 
-    let cutByTimestampRanges (inputVideoFilePath: FilePath) (timestampRanges: TimestampRange seq) (temporaryDirPath: DirectoryPath) (outputVideoFilePath: FilePath) =
+    let cutByTimestampRanges (inputVideoFilePath: FilePath) (timestampRanges: Util.Time.TimeSpanRange seq) (temporaryDirPath: DirectoryPath) (outputVideoFilePath: FilePath) =
         let guid = Util.Guid.generate()
         let temporaryDirPath = temporaryDirPath/DirectoryName guid
         Util.IO.Directory.create temporaryDirPath

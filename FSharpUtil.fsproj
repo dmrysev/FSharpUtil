@@ -16,6 +16,7 @@
     <Compile Include="String.fs" />
     <Compile Include="Regex.fs" />
     <Compile Include="StringMatch.fs" />
+    <Compile Include="Time.fs" />
     <Compile Include="IO/Path.fs" />
     <Compile Include="Environment.fs" />
     <Compile Include="Compression.fs" />
