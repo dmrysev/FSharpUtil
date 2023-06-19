@@ -90,3 +90,6 @@ let size (filePath: FilePath) =
     fileInfo.Length
 
 let readBytes (filePath: FilePath) = System.IO.File.ReadAllBytes(filePath.Value)
+
+let writeBytes (filePath: FilePath) (bytes: byte array) = 
+    System.IO.File.WriteAllBytes(filePath.Value, bytes)
