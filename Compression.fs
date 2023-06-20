@@ -21,3 +21,12 @@ module Zip =
 
     let extract (inputArchive: FilePath) (outputDirPath: DirectoryPath) =
         Util.Process.execute $"7z x '{inputArchive.Value}' -o'{outputDirPath.Value}'" |> ignore
+
+
+module Z7 =
+    let compressDirectory (inputDirPath: DirectoryPath) (outputArchiveFilePath: FilePath) (compressionLevel: CompressionLevel) =
+        let compressionLevelInt = compressionLevel |> compressionLevelToInt
+        Util.Process.execute $"7z a -t7z -mx={compressionLevelInt} '{outputArchiveFilePath.Value}' '{inputDirPath.Value}'" |> ignore
+
+    let extract (inputArchive: FilePath) (outputDirPath: DirectoryPath) =
+        Util.Process.execute $"7z x '{inputArchive.Value}' -o'{outputDirPath.Value}'" |> ignore
