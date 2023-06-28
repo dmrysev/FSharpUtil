@@ -91,5 +91,7 @@ let size (filePath: FilePath) =
 
 let readBytes (filePath: FilePath) = System.IO.File.ReadAllBytes(filePath.Value)
 
+let readBytesAsync (filePath: FilePath) = async { return readBytes filePath }
+
 let writeBytes (filePath: FilePath) (bytes: byte array) = 
     System.IO.File.WriteAllBytes(filePath.Value, bytes)

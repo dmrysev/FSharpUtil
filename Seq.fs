@@ -37,3 +37,14 @@ let prependItem item items = Seq.append [item] items
 let tailN n items = items |> Seq.skip (Seq.length items - n)
 
 let lastIndex items = Seq.length items - 1
+
+let shuffle seq =
+    let array = seq |> Seq.toArray
+    let random = System.Random()
+    for i in 0 .. array.Length - 1 do
+        let j = random.Next(i, array.Length)
+        let pom = array.[i]
+        array.[i] <- array.[j]
+        array.[j] <- pom
+
+    array |> Array.toSeq
