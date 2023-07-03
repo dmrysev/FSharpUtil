@@ -115,6 +115,7 @@ module FileName =
         let extension = fileName |> extension
         fileName.Value |> Util.String.remove extension |> FileName
     let remove (toRemove: string) (fileName: FileName) = fileName.Value |> Util.String.remove toRemove |> FileName
+    let hasExtension (extension: string) (fileName: FileName) = fileName.Value |> Util.String.endsWith extension
     let parseJsonObj (json: obj) = json |> string |> JsonConvert.DeserializeObject<FileName>
 
 module DirectoryName =
@@ -142,6 +143,10 @@ module FilePath =
     let parseJsonObj (json: obj) = json |> string |> JsonConvert.DeserializeObject<FilePath>
     let hasVideoExtension (filePath: FilePath) = filePath.Value |> Util.StringMatch.isVideoFile
     let hasImageExtension (filePath: FilePath) = filePath.Value |> Util.StringMatch.isImageFile
+    let hasExtension (extension: string) (filePath: FilePath) = 
+        filePath
+        |> fileName
+        |> FileName.hasExtension extension
 
 module DirectoryPath =
     let value (dirPath: DirectoryPath) = dirPath.Value
