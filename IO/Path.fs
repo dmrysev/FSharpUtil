@@ -69,6 +69,10 @@ type Url (value: string) =
 
 type Path = File of FilePath | Directory of DirectoryPath
 
+let value (path: Path) =
+    match path with
+    | Directory dirPath -> dirPath.Value
+    | File filePath -> filePath.Value
 let exists (path: string) = System.IO.Directory.Exists path || System.IO.File.Exists path
 let isDirectory (path: string) =
     let attributes = System.IO.File.GetAttributes path
