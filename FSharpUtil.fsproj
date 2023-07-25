@@ -45,6 +45,7 @@
     <Compile Include="Reflection.fs" />
     <Compile Include="CommandQueryRequestHandling.fs" />
     <Compile Include="Memoization.fs" />
+    <Compile Include="Reactive.fs" />
   </ItemGroup>
 
   <ItemGroup>
