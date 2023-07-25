@@ -24,6 +24,8 @@ type NotifyValue<'a>(initialState: 'a) =
             ev.Trigger(this, PropertyChangedEventArgs("Value"))
             valueChanged.Trigger value
     member val Changed = valueChanged.Publish
+    member this.AsObservableValue() =
+        ObservableValue(this.Changed, fun _ -> value)
     interface INotifyPropertyChanged with
         [<CLIEvent>]
         member this.PropertyChanged = ev.Publish
