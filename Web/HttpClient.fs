@@ -90,7 +90,7 @@ let downloadBinary httpClient config url outputFilePath =
 module TorClient =
     let init(config: TorConfig) = 
         let proxy = HttpToSocks5Proxy(config.Ip, config.Port)
-        let handler = new HttpClientHandler(Proxy = proxy, UseCookies = false)
+        let handler = new HttpClientHandler(Proxy = proxy, UseCookies = true)
         new HttpClient(handler)
 
     let resetIdentity (config: TorConfig) =
