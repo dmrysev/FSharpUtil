@@ -55,3 +55,12 @@ module XServer =
         let result = Util.Process.execute script
         if result = "1" then true
         else false
+
+module WindowManagement =
+    let windowWithTitleExists title =
+        Util.Process.execute "wmctrl -l"
+        |> Util.String.split "\n"
+        |> Seq.exists (Util.String.contains title)
+
+    let setNoTaskbar title = 
+        Util.Process.run $"wmctrl -r '{title}' -b add,skip_taskbar"
