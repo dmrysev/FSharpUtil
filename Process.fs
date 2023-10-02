@@ -57,3 +57,7 @@ let executeNoOutput (command: string) =
     p.StartInfo.UseShellExecute <- false
     p.Start() |> ignore
     p.WaitForExit()
+
+let isRunningWithName processName =
+    let pname = System.Diagnostics.Process.GetProcessesByName(processName)
+    pname.Length <> 0
