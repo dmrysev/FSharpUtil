@@ -97,6 +97,15 @@ let modificationTime (path: Path) =
         let dirInfo = System.IO.DirectoryInfo (path.Value)
         dirInfo.LastWriteTime
 
+let creationTime (path: Path) =
+    match path with
+    | File path -> 
+        let fileInfo = System.IO.FileInfo (path.Value)
+        fileInfo.CreationTime
+    | Directory path -> 
+        let dirInfo = System.IO.DirectoryInfo (path.Value)
+        dirInfo.CreationTime
+
 let size (path: Path) =
     match path with
     | File path -> 
@@ -153,6 +162,9 @@ module FilePath =
         filePath
         |> fileName
         |> FileName.hasExtension extension
+    let creationTime (filePath: FilePath) =
+        let fileInfo = System.IO.FileInfo (filePath.Value)
+        fileInfo.CreationTime
 
 module DirectoryPath =
     let value (dirPath: DirectoryPath) = dirPath.Value
