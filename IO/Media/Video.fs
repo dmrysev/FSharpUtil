@@ -34,22 +34,27 @@ module Format =
     let cutByTimestampRange (inputVideoFilePath: FilePath) (timestampRange: Util.Time.Range) (outputVideoFilePath: FilePath) =
         $"ffmpeg -ss {timestampRange.Start} -to {timestampRange.End} -i {inputVideoFilePath.Value} -c copy -v error -y {outputVideoFilePath.Value}"
         |> Util.Process.execute
-        |> ignore         
+        |> ignore
+
+    let merge (temporaryDirPath: DirectoryPath) (outputVideoFilePath: FilePath) (inputVideoFilePaths: FilePath seq) =
+        let videoChunksListFilePath = temporaryDirPath/FileName "list.txt"
+        // Util.IO.File.create videoChunksListFilePath
+        inputVideoFilePaths
+        |> Seq.map (fun videoChunkFilePath -> $"file {videoChunkFilePath.Value}" )
+        |> Util.IO.File.writeLines videoChunksListFilePath
+        $"ffmpeg -f concat -safe 0 -i {videoChunksListFilePath.Value} -c copy -y -v error {outputVideoFilePath.Value}"
+        |> Util.Process.run
 
     let cutByTimestampRanges (inputVideoFilePath: FilePath) (timestampRanges: Util.Time.Range seq) (temporaryDirPath: DirectoryPath) (outputVideoFilePath: FilePath) =
         let guid = Util.Guid.generate()
         let temporaryDirPath = temporaryDirPath/DirectoryName guid
         Util.IO.Directory.create temporaryDirPath
-        let videoChunksListFilePath = temporaryDirPath/FileName "list.txt"
-        Util.IO.File.create videoChunksListFilePath
         timestampRanges
-        |> Seq.iteri(fun i range ->
+        |> Seq.mapi(fun i range ->
             let extension = inputVideoFilePath |> FilePath.fileName |> FileName.extension
             let videoChunkFileName = sprintf "%03i" i |> FileName |> FileName.setExtension extension
             let videoChunkFilePath = temporaryDirPath/videoChunkFileName
             cutByTimestampRange inputVideoFilePath range videoChunkFilePath
-            Util.IO.File.appendLine videoChunksListFilePath $"file {videoChunkFilePath.Value}" )
-        $"ffmpeg -f concat -safe 0 -i {videoChunksListFilePath.Value} -c copy -y -v error {outputVideoFilePath.Value}"
-        |> Util.Process.execute
-        |> ignore        
+            videoChunkFilePath )
+        |> merge temporaryDirPath outputVideoFilePath
         Util.IO.Directory.delete temporaryDirPath
