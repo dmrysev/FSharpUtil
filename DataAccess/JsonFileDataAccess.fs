@@ -45,3 +45,5 @@ type JsonFileDataAccess (dataEntriesDirPath: DirectoryPath) =
         let json = Util.Json.read entryFilePath
         json[fieldName] <- value
         Util.IO.File.writeText entryFilePath (json.ToString())
+
+    member this.GetEntryFilePath = getEntryFilePath
