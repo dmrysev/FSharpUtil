@@ -37,3 +37,15 @@ let findLinksByRegex regexPattern html =
     findLinks html
     |> Seq.map snd
     |> Seq.filter isMatch
+
+let descendants (nodeName: string) (node: HtmlNode) = node.Descendants nodeName
+
+let descendant (nodeName: string) (node: HtmlNode)= 
+    node.Descendants nodeName
+    |> Seq.head
+
+module HtmlDocument =
+    let descendant (nodeName: string) (doc: HtmlDocument)= 
+        doc.Descendants nodeName
+        |> Seq.head
+        
