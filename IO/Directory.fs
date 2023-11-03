@@ -54,6 +54,11 @@ let listDirectoriesRecursive (dirPath: DirectoryPath) =
     System.IO.Directory.EnumerateDirectories (dirPath.Value, "*", System.IO.SearchOption.AllDirectories)
     |> Seq.map DirectoryPath
 
+let listEntries (dirPath: DirectoryPath) =
+    [ listDirectories dirPath |> Seq.map Path.Directory
+      listFiles dirPath |> Seq.map Path.File ]
+    |> Seq.concat
+
 let copy (source: DirectoryPath) (destination: DirectoryPath) = raise (System.NotImplementedException "")
 
 let move (source: DirectoryPath) (destination: DirectoryPath) = 
