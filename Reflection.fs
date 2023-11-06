@@ -1,6 +1,6 @@
 module Util.Reflection
 
-open Util.IO.Path
+open Util.Path
 open FSharp.Reflection
 open System
 open System.Reflection

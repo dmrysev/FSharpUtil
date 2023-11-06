@@ -1,14 +1,25 @@
-module Util.IO.Path
+module Util.Path
 
 open Newtonsoft.Json
 
+let hasOverlap seqA seqB = 
+    let resultSeqA = seqA |> Seq.except seqB
+    (resultSeqA |> Seq.length) < (seqA |> Seq.length)
+
 let invalidCharacters = ['/'; '<'; '>'; ':'; '"'; '/'; '\\'; '|'; '?'; '*']
-let directorySparator = System.IO.Path.DirectorySeparatorChar
+let directorySeparatorChar = '/'
+
+let hasDirectorySparatorChar path = path |> Seq.contains directorySeparatorChar
+
+let normalizePath path = 
+    path
+    |> Util.String.replace "\\" "/"
+    |> Util.String.replace "//" "/"
 
 type FileName (value: string) = 
     do
         if value = "" then raise (System.ArgumentException "File name can't be empty")
-        if value.Contains(string directorySparator) then raise (System.ArgumentException "File name can't contain directory separator")
+        if hasDirectorySparatorChar value then raise (System.ArgumentException "File name can't contain directory separator")
     member this.Value = value
     override this.GetHashCode () = this.Value.GetHashCode()
     override this.Equals other =
@@ -21,7 +32,7 @@ type FileName (value: string) =
 type DirectoryName(value: string) =
     do
         if value = "" then raise (System.ArgumentException "Directory name can't be empty")
-        if value.Contains(string directorySparator) then raise (System.ArgumentException "Directory name can't contain path separator")
+        if hasDirectorySparatorChar value then raise (System.ArgumentException "Directory name can't contain path separator")
     member this.Value = value
     override this.GetHashCode () = this.Value.GetHashCode()
     override this.Equals other =
@@ -34,7 +45,7 @@ type DirectoryName(value: string) =
 type FilePath(value: string) =
     do 
         if value = "" then raise (System.ArgumentException "Path can't be empty")
-    member this.Value = value
+    member this.Value = value |> normalizePath
     override this.GetHashCode() = this.Value.GetHashCode()
     override this.Equals other =
         match other with
@@ -46,7 +57,7 @@ type FilePath(value: string) =
 type DirectoryPath(value: string) =
     do
         if value = "" then raise (System.ArgumentException "Path can't be empty")
-    member this.Value = value
+    member this.Value = value |> normalizePath
     override this.GetHashCode () = this.Value.GetHashCode()
     override this.Equals other =
         match other with
@@ -73,54 +84,21 @@ let value (path: Path) =
     match path with
     | Directory dirPath -> dirPath.Value
     | File filePath -> filePath.Value
-let exists (path: string) = System.IO.Directory.Exists path || System.IO.File.Exists path
-let isDirectory (path: string) =
-    let attributes = System.IO.File.GetAttributes path
-    attributes.HasFlag(System.IO.FileAttributes.Directory)
-let isAbsolute path = path |> Util.String.startsWith (string directorySparator)
-let realPath (path: string) = Util.Process.execute $"realpath '{path}'"
-let isSymbolicLink (path: string) =
-    let pathInfo = System.IO.FileInfo path
-    pathInfo.Attributes.HasFlag(System.IO.FileAttributes.ReparsePoint)
+let isAbsolute path = 
+    let firstChar = path |> Seq.head 
+    firstChar = directorySeparatorChar
 
 let isInside (dirPath: DirectoryPath) (path: Path) =
     match path with
     | File path -> path.Value |> Util.String.startsWith dirPath.Value
     | Directory path -> path.Value |> Util.String.startsWith dirPath.Value
 
-let modificationTime (path: Path) =
-    match path with
-    | File path -> 
-        let fileInfo = System.IO.FileInfo (path.Value)
-        fileInfo.LastWriteTime
-    | Directory path -> 
-        let dirInfo = System.IO.DirectoryInfo (path.Value)
-        dirInfo.LastWriteTime
-
-let creationTime (path: Path) =
-    match path with
-    | File path -> 
-        let fileInfo = System.IO.FileInfo (path.Value)
-        fileInfo.CreationTime
-    | Directory path -> 
-        let dirInfo = System.IO.DirectoryInfo (path.Value)
-        dirInfo.CreationTime
-
-let size (path: Path) =
-    match path with
-    | File path -> 
-        let fileInfo = System.IO.FileInfo (path.Value)
-        fileInfo.Length
-    | Directory path -> 
-        System.IO.Directory.EnumerateFiles(path.Value, "*", System.IO.SearchOption.AllDirectories)
-        |> Seq.map (fun filePath ->
-            let fileInfo = System.IO.FileInfo (filePath)
-            fileInfo.Length)
-        |> Seq.sum
-
 module FileName =
     let value (fileName: FileName) = fileName.Value
-    let extension(fileName: FileName) = System.IO.Path.GetExtension fileName.Value
+    let extension(fileName: FileName) = 
+        fileName.Value
+        |> Util.String.split "."
+        |> Seq.last
     let setExtension (extension: string) (fileName: FileName) =
         let extension = extension |> Util.String.remove "."
         FileName (sprintf "%s.%s" fileName.Value extension)
@@ -138,23 +116,28 @@ module DirectoryName =
 
 module FilePath =
     let value (dirPath: FilePath) = dirPath.Value
-    let exists (filePath: FilePath) = System.IO.File.Exists filePath.Value
     let isAbsolute (filePath: FilePath) = filePath.Value |> isAbsolute
-    let fileName (filePath: FilePath) = filePath.Value |> System.IO.Path.GetFileName |> FileName
+    let fileName (filePath: FilePath) = 
+        let lastSeparatorIndex =
+            filePath.Value 
+            |> Seq.findIndexBack (fun c -> c = directorySeparatorChar)
+        filePath.Value 
+        |> Util.String.tail lastSeparatorIndex
+        |> FileName
     let fileNameWithoutExtension (filePath: FilePath) = filePath |> fileName |> FileName.withoutExtension
     let fileExtension (filePath: FilePath) = filePath |> fileName |> FileName.extension
-    let realPath (filePath: FilePath) = realPath filePath.Value |> FilePath
     let directoryPath (filePath: FilePath) =
-        let dirPath = System.IO.Path.GetDirectoryName filePath.Value
-        DirectoryPath dirPath
+        let lastSeparatorIndex =
+            filePath.Value 
+            |> Seq.findIndexBack (fun c -> c = directorySeparatorChar)
+        filePath.Value
+        |> Util.String.head lastSeparatorIndex
+        |> DirectoryPath
     let relativeTo (dirPath: DirectoryPath) (filePath: FilePath) = 
         let toRemove = $"{dirPath.Value}/"
         filePath.Value 
         |> Util.String.remove toRemove
         |> FilePath
-    let hasDirectoryPath (filePath: FilePath) =
-        let dirPath = System.IO.Path.GetDirectoryName filePath.Value
-        dirPath <> ""
     let parseJsonObj (json: obj) = json |> string |> JsonConvert.DeserializeObject<FilePath>
     let hasVideoExtension (filePath: FilePath) = filePath |> fileName |> FileName.hasVideoExtension
     let hasImageExtension (filePath: FilePath) = filePath |> fileName |> FileName.hasImageExtension
@@ -162,9 +145,6 @@ module FilePath =
         filePath
         |> fileName
         |> FileName.hasExtension extension
-    let creationTime (filePath: FilePath) =
-        let fileInfo = System.IO.FileInfo (filePath.Value)
-        fileInfo.CreationTime
 
 module DirectoryPath =
     let value (dirPath: DirectoryPath) = dirPath.Value
@@ -174,28 +154,29 @@ module DirectoryPath =
         dirPath2.Value 
         |> Util.String.remove toRemove
         |> DirectoryPath
-    let directoryName(dirPath: DirectoryPath) = System.IO.Path.GetFileName dirPath.Value |> DirectoryName
+    let directoryName(dirPath: DirectoryPath) = 
+        dirPath.Value
+        |> Util.String.split "/"
+        |> Seq.last
+        |> DirectoryName
     let parent(dirPath: DirectoryPath) = 
-        let parent = System.IO.Directory.GetParent dirPath.Value
-        parent.ToString() |> DirectoryPath
-    let realPath (dirPath: DirectoryPath) = realPath dirPath.Value |> DirectoryPath
+        let dirName = directoryName dirPath
+        dirPath.Value
+        |> Util.String.remove dirName.Value
+        |> DirectoryPath
     let parseJsonObj (json: obj) = json |> string |> JsonConvert.DeserializeObject<DirectoryPath>
 
 type DirectoryPath with
     static member (/) (path1: DirectoryPath, path2: DirectoryPath) = 
         if path2 |> DirectoryPath.isAbsolute then raise (System.ArgumentException "Can't join with absolute path")
-        let combined = System.IO.Path.Combine(path1.Value, path2.Value)
-        DirectoryPath combined
+        DirectoryPath $"{path1.Value}{directorySeparatorChar}{path2.Value}"
     static member (/) (path1: DirectoryPath, path2: DirectoryName) = 
-        let combined = System.IO.Path.Combine(path1.Value, path2.Value)
-        DirectoryPath combined
+        DirectoryPath $"{path1.Value}{directorySeparatorChar}{path2.Value}"
     static member (/) (path1: DirectoryPath, path2: FilePath) = 
         if path2 |> FilePath.isAbsolute then raise (System.ArgumentException "Can't join with absolute path")
-        let combined = System.IO.Path.Combine(path1.Value, path2.Value)
-        FilePath combined
+        FilePath $"{path1.Value}{directorySeparatorChar}{path2.Value}"
     static member (/) (path1: DirectoryPath, path2: FileName) = 
-        let combined = System.IO.Path.Combine(path1.Value, path2.Value)
-        FilePath combined
+        FilePath $"{path1.Value}{directorySeparatorChar}{path2.Value}"
     static member setHeadDirectoryName (newName: string) (dirPath: DirectoryPath) =
         let parentDirPath = dirPath |> DirectoryPath.parent
         parentDirPath/DirectoryName newName
@@ -226,9 +207,18 @@ module Url =
     let domainName(url: Url) = System.Uri(url.Value).Host
     let isMath (regexPattern: string) (url: Url) = url.Value |> Util.Regex.isMatch regexPattern
     let isDomainMatch (otherUrl: Url) (url: Url) = (url |> domainName) = (otherUrl |> domainName)
-    let fileName (url: Url) = url.Value |> System.IO.Path.GetFileName |> FileName
+    let fileName (url: Url) = 
+        let lastSeparatorIndex =
+            url.Value 
+            |> Seq.findIndexBack (fun c -> c = directorySeparatorChar)
+        url.Value 
+        |> Util.String.tail lastSeparatorIndex
+        |> FileName
     let isMatch (regexPattern: string) (url: Url) = url |> isMath regexPattern
-    let extension (url: Url) = System.IO.Path.GetExtension url.Value
+    let extension (url: Url) = 
+        url
+        |> fileName
+        |> FileName.extension
     let remove (toRemove: string) (url: Url) =
         url.Value
         |> Util.String.remove toRemove

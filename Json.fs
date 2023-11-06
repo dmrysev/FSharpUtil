@@ -1,6 +1,6 @@
 module Util.Json
 
-open Util.IO.Path
+open Util.Path
 open Newtonsoft.Json
 
 let defaultSettings =

@@ -1,6 +1,6 @@
 module Util.Environment
 
-open Util.IO.Path
+open Util.Path
 open System
 open System.Runtime.InteropServices
 

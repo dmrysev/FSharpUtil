@@ -1,6 +1,6 @@
 module Util.Encryption
 
-open Util.IO.Path
+open Util.Path
 open NETCore.Encrypt
 
 type Key = { Key: string; IV: string }

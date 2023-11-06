@@ -1,5 +1,5 @@
 ﻿open Util.MessageQueueQuery
-open Util.IO.Path
+open Util.Path
 open System
 open System.IO
 

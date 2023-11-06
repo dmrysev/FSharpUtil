@@ -1,6 +1,6 @@
 module Util.IO.Directory
 
-open Util.IO.Path
+open Util.Path
 
 let empty (dirPath: DirectoryPath) =
     System.IO.Directory.GetFileSystemEntries(dirPath.Value).Length = 0
@@ -9,7 +9,8 @@ let exists (dirPath: DirectoryPath) =
     System.IO.Directory.Exists dirPath.Value
 
 let isSymbolicLink (dirPath: DirectoryPath) =
-    Util.IO.Path.isSymbolicLink dirPath.Value
+    let pathInfo = System.IO.FileInfo dirPath.Value
+    pathInfo.Attributes.HasFlag(System.IO.FileAttributes.ReparsePoint)
 
 let countFiles (dirPath: DirectoryPath) =
     System.IO.Directory.EnumerateFiles dirPath.Value |> Seq.length
@@ -75,3 +76,19 @@ let getSymbolicLinkRealPath (path: DirectoryPath) =
     let command = sprintf "readlink -f \"%s\"" path.Value
     let output = Util.Process.execute command
     output.Replace("\n", "")
+
+let modificationTime (path: DirectoryPath) =
+    let dirInfo = System.IO.DirectoryInfo (path.Value)
+    dirInfo.LastWriteTime
+
+let creationTime (path: DirectoryPath) =
+    let dirInfo = System.IO.DirectoryInfo (path.Value)
+    dirInfo.CreationTime
+
+let size (path: DirectoryPath) =
+    System.IO.Directory.EnumerateFiles(path.Value, "*", System.IO.SearchOption.AllDirectories)
+    |> Seq.map (fun filePath ->
+        let fileInfo = System.IO.FileInfo (filePath)
+        fileInfo.Length)
+    |> Seq.sum
+        

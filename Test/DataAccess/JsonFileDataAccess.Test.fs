@@ -1,7 +1,7 @@
 module Util.Test.JsonFileDataAccess
 
 open Util
-open Util.IO.Path
+open Util.Path
 open NUnit.Framework
 open FsUnit
 

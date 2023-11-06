@@ -1,6 +1,6 @@
 module Util.Test.File
 
-open Util.IO.Path
+open Util.Path
 open NUnit.Framework
 open FsUnit
 

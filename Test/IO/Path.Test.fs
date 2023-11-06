@@ -1,6 +1,6 @@
 module Util.Test.IO.Path
 
-open Util.IO.Path
+open Util.Path
 open NUnit.Framework
 open FsUnit
 
@@ -96,3 +96,8 @@ let ``Get url domain name``() =
 let ``Fix url``() =
     "https://source.com/view/1234" |> Url.fix |> should equal "https://source.com/view/1234"
     "https://source.com/view/1234/" |> Url.fix |> should equal "https://source.com/view/1234"
+
+[<Test>]
+let ``Get directory name from directory path``() =
+    DirectoryPath "/some/path/to/dirName" |> DirectoryPath.directoryName |> should equal (DirectoryName "dirName")
+    DirectoryPath "\\some\\path\\to\\dirName" |> DirectoryPath.directoryName |> should equal (DirectoryName "dirName")

@@ -1,7 +1,7 @@
 module Util.Test.Json
 
 open Util
-open Util.IO.Path
+open Util.Path
 open Util.Json
 open NUnit.Framework
 open FsUnit

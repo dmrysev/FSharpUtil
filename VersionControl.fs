@@ -1,6 +1,6 @@
 module Util.VersionControl
 
-open Util.IO.Path
+open Util.Path
 
 let run (workingDirectory: DirectoryPath) (command: string) =
     use p = 

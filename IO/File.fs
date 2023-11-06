@@ -1,6 +1,6 @@
 module Util.IO.File
 
-open Util.IO.Path
+open Util.Path
 open System.IO
 
 let create (filePath: FilePath) =
@@ -9,14 +9,17 @@ let create (filePath: FilePath) =
     use fileStream = File.Create filePath.Value
     ()
 
+let exists (filePath: FilePath) = System.IO.File.Exists filePath.Value
+let ensureExists (filePath: FilePath) = if not (filePath |> exists) then create filePath
+
 let appendLine (filePath: FilePath) (text: string) =
-    if not <| Util.IO.Path.FilePath.exists filePath then create filePath
+    ensureExists filePath
     use fileStream = File.Open(filePath.Value, FileMode.Append)
     use streamWriter = new StreamWriter(fileStream)
     streamWriter.WriteLine(text)
 
 let writeText (filePath: FilePath) (text: string) = 
-    if not <| Util.IO.Path.FilePath.exists filePath then create filePath
+    ensureExists filePath
     System.IO.File.WriteAllText (filePath.Value, text)
     
 let writeLines (filePath: FilePath) (lines: seq<string>) = System.IO.File.WriteAllLines(filePath.Value, lines)
@@ -34,17 +37,10 @@ let tail (filePath: string) (linesCount: int) =
 let firstLine(filePath: FilePath) = head filePath 1 |> Seq.head 
 let lastLine (filePath: string) = tail filePath 1 |> Seq.head
 
-let move (sourceFilePath: FilePath) (destinationPath: string) =
-    if destinationPath |> exists && destinationPath |> isDirectory then
-        let destinationPath = DirectoryPath destinationPath
-        let fileName = sourceFilePath |> FilePath.fileName
-        let destinationFilePath = destinationPath/fileName
-        System.IO.File.Move(sourceFilePath.Value, destinationFilePath.Value)
-    else
-        let destinationPath = FilePath destinationPath
-        let dirPath = destinationPath |> FilePath.directoryPath
-        System.IO.Directory.CreateDirectory dirPath.Value |> ignore
-        System.IO.File.Move (sourceFilePath.Value, destinationPath.Value)
+let move (sourceFilePath: FilePath) (destinationPath: FilePath) =
+    let dirPath = destinationPath |> FilePath.directoryPath
+    System.IO.Directory.CreateDirectory dirPath.Value |> ignore
+    System.IO.File.Move (sourceFilePath.Value, destinationPath.Value)
 
 let moveToDirectory (sourceFilePath: FilePath) (destinationDirPath: DirectoryPath) =
     let fileName = sourceFilePath |> FilePath.fileName
@@ -53,22 +49,20 @@ let moveToDirectory (sourceFilePath: FilePath) (destinationDirPath: DirectoryPat
 
 let delete (path: FilePath) = System.IO.File.Delete path.Value
 
-let copy (sourceFilePath: FilePath) destinationPath = 
-    if destinationPath |> exists && destinationPath |> isDirectory then
-        let destinationPath = DirectoryPath destinationPath
-        let fileName = sourceFilePath |> FilePath.fileName
-        let destinationFilePath = destinationPath/fileName
-        System.IO.File.Copy(sourceFilePath.Value, destinationFilePath.Value, true)
-    else
-        System.IO.File.Copy(sourceFilePath.Value, destinationPath, true)
+let copy (sourceFilePath: FilePath) (destinationPath: FilePath) = 
+    System.IO.File.Copy(sourceFilePath.Value, destinationPath.Value, true)
 
-let exists (filePath: FilePath) = System.IO.File.Exists filePath.Value
-let ensureExists (filePath: FilePath) = if not (filePath |> exists) then create filePath
+let copyToDirectory (sourceFilePath: FilePath) (destinationPath: DirectoryPath) = 
+    let fileName = sourceFilePath |> FilePath.fileName
+    let destinationFilePath = destinationPath/fileName
+    System.IO.File.Copy(sourceFilePath.Value, destinationFilePath.Value, true)
+
 let readAllLines (filePath: FilePath) = System.IO.File.ReadAllLines filePath.Value
 let readAllText (filePath: FilePath) = System.IO.File.ReadAllText filePath.Value
 
 let isSymbolicLink (filePath: FilePath) =
-    Util.IO.Path.isSymbolicLink filePath.Value
+    let pathInfo = System.IO.FileInfo filePath.Value
+    pathInfo.Attributes.HasFlag(System.IO.FileAttributes.ReparsePoint)
 
 let getSymbolicLinkRealPath (filePath: FilePath) =
     if not (isSymbolicLink filePath) then raise (System.ArgumentException "Not a symbolic link")
@@ -85,10 +79,6 @@ let openWithDefaultApplication (filePath: FilePath) =
         Util.Process.executeNoOutput $"xdg-open {filePath.Value} &"
     else raise (System.NotImplementedException())
 
-let size (filePath: FilePath) =
-    let fileInfo = System.IO.FileInfo (filePath.Value)
-    fileInfo.Length
-
 let readBytes (filePath: FilePath) = System.IO.File.ReadAllBytes(filePath.Value)
 
 let readBytesAsync (filePath: FilePath) = async { return readBytes filePath }
@@ -96,6 +86,19 @@ let readBytesAsync (filePath: FilePath) = async { return readBytes filePath }
 let writeBytes (filePath: FilePath) (bytes: byte array) = 
     System.IO.File.WriteAllBytes(filePath.Value, bytes)
 
-let modificationTime (filePath: FilePath) =
-    let fileInfo = System.IO.FileInfo (filePath.Value)
+let realPath (filePath: FilePath) = 
+    Util.Process.execute $"realpath '{filePath.Value}'"
+    |> FilePath
+
+let modificationTime (path: FilePath) =
+    let fileInfo = System.IO.FileInfo (path.Value)
     fileInfo.LastWriteTime
+
+let creationTime (path: FilePath) =
+    let fileInfo = System.IO.FileInfo (path.Value)
+    fileInfo.CreationTime
+
+let size (path: FilePath) =
+    let fileInfo = System.IO.FileInfo (path.Value)
+    fileInfo.Length
+        

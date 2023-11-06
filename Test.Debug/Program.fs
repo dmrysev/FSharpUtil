@@ -1,5 +1,5 @@
 ﻿open Util
-open Util.IO.Path
+open Util.Path
 open System.Security.Cryptography
 open System.IO
 

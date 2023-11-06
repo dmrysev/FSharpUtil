@@ -1,6 +1,6 @@
 module Util.MessageQueue
 
-open Util.IO.Path
+open Util.Path
 open System.IO
 
 exception QueueLimitReachedException of string

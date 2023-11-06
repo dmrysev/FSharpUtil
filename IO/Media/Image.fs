@@ -1,6 +1,6 @@
 namespace Util.IO.Media.Image
 
-open Util.IO.Path
+open Util.Path
 
 module File =
     type OpenOptions = { Title: string option }

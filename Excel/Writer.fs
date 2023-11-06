@@ -1,7 +1,7 @@
 module Util.Excel.Writer
 
 open Util.Excel
-open Util.IO.Path
+open Util.Path
 
 let csvToExcel (outputFilePath: FilePath) sheetName (csv: string seq seq) =
     WriterCSharp.Writer.ConvertWithOpenXml(outputFilePath.Value, sheetName, csv) |> ignore

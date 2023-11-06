@@ -1,6 +1,6 @@
 module Util.Web.HttpClient
 
-open Util.IO.Path
+open Util.Path
 open Util.API.Web
 open FSharp.Data
 open System.Net.Http

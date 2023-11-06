@@ -1,7 +1,7 @@
 module Util.Test.MessageQueueRequest
 
 open Util
-open Util.IO.Path
+open Util.Path
 open Util.MessageQueueCommand
 open Util.MessageQueueQuery
 open NUnit.Framework

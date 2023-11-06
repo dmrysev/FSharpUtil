@@ -1,6 +1,6 @@
 module Util.Test
 
-open Util.IO.Path
+open Util.Path
 
 let startLoopAsync func =
     let rec loop() = async {

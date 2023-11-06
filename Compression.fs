@@ -1,6 +1,6 @@
 module Util.Compression
 
-open Util.IO.Path
+open Util.Path
 open System.IO.Compression
 
 type CompressionLevel = NoCompression | Level1 | Level3 | Level5 | Level7 | Level9

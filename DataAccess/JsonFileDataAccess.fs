@@ -1,6 +1,6 @@
 namespace Util.DataAccess
 
-open Util.IO.Path
+open Util.Path
 
 type JsonFileDataAccess (dataEntriesDirPath: DirectoryPath) =
     let jsonFieldValueComparer (fieldName: string) value (jsonFilePath: FilePath) =
@@ -16,7 +16,7 @@ type JsonFileDataAccess (dataEntriesDirPath: DirectoryPath) =
         else
             let dirInfo = System.IO.DirectoryInfo(dataEntriesDirPath.Value)
             dirInfo.EnumerateFiles()
-            |> Seq.map (fun x -> x.FullName |> Util.IO.Path.FilePath |> Util.IO.File.readAllText)
+            |> Seq.map (fun x -> x.FullName |> Util.Path.FilePath |> Util.IO.File.readAllText)
 
     member this.Write (id: string) (jsonString: string) =
         let entryFilePath = getEntryFilePath id

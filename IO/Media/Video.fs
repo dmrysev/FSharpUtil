@@ -1,6 +1,6 @@
 namespace Util.IO.Media.Video
 
-open Util.IO.Path
+open Util.Path
 
 module Info =
     let duration (filePath: FilePath) = 
