@@ -215,7 +215,7 @@ module Url =
             url.Value 
             |> Seq.findIndexBack (fun c -> c = directorySeparatorChar)
         url.Value 
-        |> Util.String.tail lastSeparatorIndex
+        |> Util.String.tail (lastSeparatorIndex + 1)
         |> FileName
     let isMatch (regexPattern: string) (url: Url) = url |> isMath regexPattern
     let extension (url: Url) = 
