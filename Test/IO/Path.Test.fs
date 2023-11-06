@@ -47,7 +47,7 @@ let ``If input string is invalid, initializing directory name, must raise argume
     (fun () -> DirectoryName "/A/B" |> ignore) |> should throw typeof<System.ArgumentException>
 
 [<Test>]
-let ``Setting file name extension, must accept string with and without dot char``() =
+let ``Setting file name extens, must accept string with and without dot char``() =
     FileName "file" |> FileName.setExtension "txt" |> should equal (FileName "file.txt")
     FileName "file" |> FileName.setExtension ".txt" |> should equal (FileName "file.txt")
 
@@ -101,3 +101,11 @@ let ``Fix url``() =
 let ``Get directory name from directory path``() =
     DirectoryPath "/some/path/to/dirName" |> DirectoryPath.directoryName |> should equal (DirectoryName "dirName")
     DirectoryPath "\\some\\path\\to\\dirName" |> DirectoryPath.directoryName |> should equal (DirectoryName "dirName")
+
+[<Test>]
+let ``Get file name``() =
+    FilePath "/some/path/to/file.txt" |> FilePath.fileName |> should equal (FileName "file.txt")
+
+[<Test>]
+let ``Get file name without extension``() =
+    FilePath "/some/path/to/file.txt" |> FilePath.fileNameWithoutExtension |> should equal (FileName "file")

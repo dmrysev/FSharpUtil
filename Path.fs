@@ -100,11 +100,14 @@ module FileName =
         |> Util.String.split "."
         |> Seq.last
     let setExtension (extension: string) (fileName: FileName) =
-        let extension = extension |> Util.String.remove "."
+        let extension = extension |> Util.String.removeFirstCharacterIfEquals "."
         FileName (sprintf "%s.%s" fileName.Value extension)
     let withoutExtension(fileName: FileName) = 
         let extension = fileName |> extension
-        fileName.Value |> Util.String.remove extension |> FileName
+        fileName.Value 
+        |> Util.String.remove extension 
+        |> Util.String.removeLastCharacterIfEquals "."
+        |> FileName
     let remove (toRemove: string) (fileName: FileName) = fileName.Value |> Util.String.remove toRemove |> FileName
     let hasExtension (extension: string) (fileName: FileName) = fileName.Value |> Util.String.endsWith extension
     let parseJsonObj (json: obj) = json |> string |> JsonConvert.DeserializeObject<FileName>
@@ -122,7 +125,7 @@ module FilePath =
             filePath.Value 
             |> Seq.findIndexBack (fun c -> c = directorySeparatorChar)
         filePath.Value 
-        |> Util.String.tail lastSeparatorIndex
+        |> Util.String.tail (lastSeparatorIndex + 1)
         |> FileName
     let fileNameWithoutExtension (filePath: FilePath) = filePath |> fileName |> FileName.withoutExtension
     let fileExtension (filePath: FilePath) = filePath |> fileName |> FileName.extension
