@@ -92,3 +92,6 @@ let size (path: DirectoryPath) =
         fileInfo.Length)
     |> Seq.sum
         
+let realPath (dirPath: DirectoryPath) = 
+    Util.Process.execute $"realpath '{dirPath.Value}'"
+    |> DirectoryPath
