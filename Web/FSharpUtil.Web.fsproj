@@ -5,7 +5,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="HttpClient.fs" />
+    <Compile Include="Http.fs" />
+    <Compile Include="Tor.fs" />
+    <Compile Include="Driver.fs" />
+    <Compile Include="Client.fs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -15,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\API\Web\FSharpUtil.API.Web.fsproj" />
+    <ProjectReference Include="API\FSharpUtil.API.Web.fsproj" />
     <ProjectReference Include="..\IO\FSharpUtil.IO.fsproj" />
   </ItemGroup>
 
