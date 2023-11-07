@@ -6,17 +6,16 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="Reader.fs" />
-    <Compile Include="Writer.fs" />
+    <Compile Include="Encryption.fs" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="WriterCSharp/WriterCSharp.csproj" />
+    <PackageReference Include="NETCore.Encrypt" Version="2.1.1" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Core\FSharpUtil.Core.fsproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="ExcelDataReader" Version="3.6.0" />
+    <ProjectReference Include="..\IO\FSharpUtil.IO.fsproj" />
   </ItemGroup>
 
 </Project>

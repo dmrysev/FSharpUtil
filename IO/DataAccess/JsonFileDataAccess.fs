@@ -4,7 +4,9 @@ open Util.Path
 
 type JsonFileDataAccess (dataEntriesDirPath: DirectoryPath) =
     let jsonFieldValueComparer (fieldName: string) value (jsonFilePath: FilePath) =
-        let json = Util.Json.read jsonFilePath
+        let json = 
+            Util.IO.File.readAllText jsonFilePath
+            |> Util.Json.parse
         json.Value(fieldName) = value 
 
     let getEntryFilePath id =
@@ -36,13 +38,16 @@ type JsonFileDataAccess (dataEntriesDirPath: DirectoryPath) =
     member this.FindByFieldValue fieldName (value: 'b) =
         Util.IO.Directory.listFiles dataEntriesDirPath
         |> Seq.find (jsonFieldValueComparer fieldName value)
-        |> Util.Json.deserializeFile<'Record>
+        |> Util.IO.File.readAllText 
+        |> Util.Json.fromJson<'Record>
 
     member this.FindById (id: string) = getEntryFilePath id |> Util.IO.File.readAllText
 
     member this.UpdateFieldValue id (fieldName: string) value =
         let entryFilePath = getEntryFilePath id
-        let json = Util.Json.read entryFilePath
+        let json = 
+            Util.IO.File.readAllText entryFilePath
+            |> Util.Json.parse
         json[fieldName] <- value
         Util.IO.File.writeText entryFilePath (json.ToString())
 

@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Process.fs" />
+    <Compile Include="Environment.fs" />
+    <Compile Include="Compression.fs" />
+    <Compile Include="File.fs" />
+    <Compile Include="Directory.fs" />
+    <Compile Include="Clipboard.fs" />
+    <Compile Include="Media/Image.fs" />
+    <Compile Include="Media/Video.fs" />
+    <Compile Include="Media/Ebook.fs" />
+    <Compile Include="Log.fs" />
+    <Compile Include="Reflection.fs" />
+    <Compile Include="Test.fs" />
+    <Compile Include="DataAccess/JsonFileDataAccess.fs" />
+    <Compile Include="VersionControl.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Core\FSharpUtil.Core.fsproj" />
+  </ItemGroup>
+
+</Project>

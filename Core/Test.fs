@@ -9,10 +9,6 @@ let startLoopAsync func =
         do! loop() }
     loop() |> Async.Start
 
-let startMessageQueueSpamming queueName message =
-    let func() = Util.MessageQueue.enqueueAsync queueName message
-    startLoopAsync func
-
 let downloadBinaryFake (url: Url) (outputFilePath: FilePath) = Util.IO.File.create outputFilePath
 
 type EventMonitor<'a>(event: IEvent<'a>) as this =

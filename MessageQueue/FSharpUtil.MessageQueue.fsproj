@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="MessageQueue.fs" />
+    <Compile Include="MessageQueueMonitor.fs" />
+    <Compile Include="MessageQueueTreeMonitor.fs" />
+    <Compile Include="MessageQueueCommand.fs" />
+    <Compile Include="MessageQueueQuery.fs" />
+    <Compile Include="CommandQueryRequestHandling.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\IO\FSharpUtil.IO.fsproj" />
+  </ItemGroup>
+
+</Project>

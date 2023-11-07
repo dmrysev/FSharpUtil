@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="**/*.fs"/>
+    <Compile Include="**/*.fs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -16,7 +16,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\FSharpUtil.fsproj" />
+    <ProjectReference Include="..\IO\FSharpUtil.IO.fsproj" />
+    <ProjectReference Include="..\Excel\FSharpUtil.Excel.fsproj" />
+    <ProjectReference Include="..\Web\FSharpUtil.Web.fsproj" />
+    <ProjectReference Include="..\Encryption\FSharpUtil.Encryption.fsproj" />
+    <ProjectReference Include="..\MessageQueue\FSharpUtil.MessageQueue.fsproj" />
   </ItemGroup>
 
 </Project>

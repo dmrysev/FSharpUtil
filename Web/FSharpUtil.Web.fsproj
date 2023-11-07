@@ -15,7 +15,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\FSharpUtil.fsproj" />
+    <ProjectReference Include="..\API\Web\FSharpUtil.API.Web.fsproj" />
+    <ProjectReference Include="..\IO\FSharpUtil.IO.fsproj" />
   </ItemGroup>
 
 </Project>
