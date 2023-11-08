@@ -22,6 +22,8 @@
     <Compile Include="Html.fs" />
     <Compile Include="Memoization.fs" />
     <Compile Include="Reactive.fs" />
+    <Compile Include="Reflection.fs" />
+    <Compile Include="Environment.fs" />
   </ItemGroup>
 
   <ItemGroup>

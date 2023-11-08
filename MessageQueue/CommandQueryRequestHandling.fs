@@ -86,7 +86,7 @@ let sendCommand<'RequestArgs> (options: CommandOptions) (requestArgs: 'RequestAr
 let bindCommand<'RequestArgs> 
     (handleFunct: 'RequestArgs -> unit) 
     (command: MessageQueueCommand.Command<'RequestArgs>) =
-    let currentExecutableFilePath = Util.Reflection.currentExecutableFilePath()
+    let currentExecutableFilePath = Util.IO.Reflection.currentExecutableFilePath()
     let responder = command.NewResponder()
     responder.NewRequest.Add (fun (requestHandler: MessageQueueCommand.RequestHandler<'RequestArgs>) ->
         Async.Start (async {
@@ -108,7 +108,7 @@ let bindCommand<'RequestArgs>
 let bindQuery<'RequestArgs, 'ResponseMessage>
     (handleFunct: 'RequestArgs -> 'ResponseMessage) 
     (query: MessageQueueQuery.Query<'RequestArgs, 'ResponseMessage>) =
-    let currentExecutableFilePath = Util.Reflection.currentExecutableFilePath()
+    let currentExecutableFilePath = Util.IO.Reflection.currentExecutableFilePath()
     let responder = query.NewResponder()
     responder.NewRequest.Add (fun (requestHandler: MessageQueueQuery.RequestHandler<'RequestArgs, 'ResponseMessage>) ->
         Async.Start (async {

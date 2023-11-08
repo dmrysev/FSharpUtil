@@ -75,7 +75,7 @@ let createSymbolicLink (sourcePath: FilePath) (destinationPath: string) =
     Util.Process.execute command |> ignore
 
 let openWithDefaultApplication (filePath: FilePath) =
-    if Util.Environment.OS.isLinux() then
+    if Util.IO.Environment.OS.isLinux() then
         Util.Process.executeNoOutput $"xdg-open {filePath.Value} &"
     else raise (System.NotImplementedException())
 
