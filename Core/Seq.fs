@@ -48,3 +48,14 @@ let shuffle seq =
         array.[j] <- pom
 
     array |> Array.toSeq
+
+let limitItems (startIndex: int) (maxResultCount: int) items = 
+    let maxResultCount = 
+        if (startIndex + maxResultCount) > (items |> Seq.length)
+        then (items |> Seq.length) - startIndex
+        else maxResultCount
+    if not (items |> hasItemAt startIndex) then Seq.empty
+    else
+        items
+        |> Seq.skip startIndex
+        |> Seq.take maxResultCount
