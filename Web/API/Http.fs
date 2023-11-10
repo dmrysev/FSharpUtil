@@ -13,3 +13,7 @@ with static member Default = {
         RetryOnHttpError = true
         MaxRetriesOnHttpError = 3
         HttpErrorRetryTimeout = System.TimeSpan.FromMinutes(1.0) }
+
+type Proxy = {
+    Ip: string
+    Port: int }

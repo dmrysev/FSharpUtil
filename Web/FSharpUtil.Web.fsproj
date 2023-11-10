@@ -6,13 +6,11 @@
 
   <ItemGroup>
     <Compile Include="Http.fs" />
-    <Compile Include="Tor.fs" />
     <Compile Include="Driver.fs" />
     <Compile Include="Client.fs" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="DotNetTor" Version="2.3.3" />
     <PackageReference Include="HttpToSocks5Proxy" Version="1.4.0" />
     <PackageReference Include="Selenium.WebDriver" Version="4.0.0" />
   </ItemGroup>

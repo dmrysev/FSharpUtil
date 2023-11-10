@@ -3,7 +3,7 @@ module Util.API.Web.Client
 open Util.API.Web
 open Util.Path
 
-type ClientType = HttpClient | WebClient | TorHttpClient | TorWebClient | WebStream
+type ClientType = HttpClient | WebClient | ProxyHttpClient | ProxyWebClient | WebStream
 
 type IWebClient =
     inherit System.IDisposable

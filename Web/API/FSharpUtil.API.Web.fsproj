@@ -7,7 +7,6 @@
 
   <ItemGroup>
     <Compile Include="Http.fs" />
-    <Compile Include="Tor.fs" />
     <Compile Include="Client.fs" />
   </ItemGroup>
 

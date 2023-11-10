@@ -13,45 +13,52 @@ let downloadBinaryAsync client config url outputFilePath =
     // events.HttpError.Add logHttpError
     task
 
+let initProxyHttpClient (proxy: Util.API.Web.Http.Proxy) = 
+    let proxy = MihaZupan.HttpToSocks5Proxy (proxy.Ip, proxy.Port)
+    let handler = new System.Net.Http.HttpClientHandler (Proxy = proxy, UseCookies = true)
+    new System.Net.Http.HttpClient (handler)
 
-type Resources (torConfig: Util.API.Web.Tor.Config, webBrowserExePath: FilePath) =
+type Resources (
+    webDriverLocation: DirectoryPath, 
+    proxy: Util.API.Web.Http.Proxy,
+    remoteDebuggerPort: int,
+    remoteDebuggerPortProxy: int) =
     let mutable webDriver: OpenQA.Selenium.IWebDriver option = None
-    let mutable torWebDriver: OpenQA.Selenium.IWebDriver option = None
+    let mutable proxyWebDriver: OpenQA.Selenium.IWebDriver option = None
     let initWebDriver() =
-        let webDriverConfig: Util.Web.Driver.Config = {
-            Tor = Util.API.Web.Tor.Config.Default
-            WebBrowserExePath = FilePath.None
-            WebDriverLocation = DirectoryPath "/usr/bin" }
-        Util.Web.Driver.initChromeRemote webDriverConfig 9222
-    let initTorWebDriver(torConfig: Util.API.Web.Tor.Config) =
-        let webDriverConfig: Util.Web.Driver.Config = {
-            Tor = torConfig
-            WebBrowserExePath = FilePath.None
-            WebDriverLocation = DirectoryPath "/usr/bin" }
-        Util.Web.Driver.initChromeRemote webDriverConfig 9223
+        let webDriverConfig = {
+            Util.Web.Driver.Config.Default with
+                WebDriverLocation = webDriverLocation }
+        Util.Web.Driver.initChromeRemote webDriverConfig remoteDebuggerPort
+    let initProxyWebDriver(proxy: Util.API.Web.Http.Proxy) =
+        let webDriverConfig = {
+            Util.Web.Driver.Config.Default with
+                Proxy = Some proxy
+                WebDriverLocation = webDriverLocation }
+        Util.Web.Driver.initChromeRemote webDriverConfig remoteDebuggerPortProxy
     member this.GetWebDriver() =
         match webDriver with
         | Some driver -> driver
         | None -> 
             webDriver <- Some (initWebDriver())
             webDriver.Value
-    member this.GetTorWebDriver() =
-        match torWebDriver with
+    member this.GetProxyWebDriver() =
+        match proxyWebDriver with
         | Some driver -> driver
         | None -> 
-            torWebDriver <- Some (initTorWebDriver torConfig)
-            torWebDriver.Value
+            proxyWebDriver <- Some (initProxyWebDriver proxy)
+            proxyWebDriver.Value
     interface System.IDisposable with
         member this.Dispose() = 
             match webDriver with
             | Some driver -> driver.Dispose()
             | None -> ()
-            match torWebDriver with
+            match proxyWebDriver with
             | Some driver -> driver.Dispose()
             | None -> ()
 
-type TorHttpClient (torConfig: Util.API.Web.Tor.Config) =
-    let client = Util.Web.Tor.initHttpClient torConfig
+type ProxyHttpClient (proxy: Util.API.Web.Http.Proxy) =
+    let client = initProxyHttpClient proxy
     interface Util.API.Web.Client.IWebClient with
         member this.GetHtmlContentAsync config url = getHtmlContentAsync client config url
         member this.GetHtmlContent config url = getHtmlContentAsync client config url |> Async.RunSynchronously
@@ -111,9 +118,9 @@ type WebStreamClient() =
         member this.Dispose() = 
             client.Dispose()
 
-type TorWebClient (torConfig: Util.API.Web.Tor.Config, resources: Resources) =
-    let webDriver = resources.GetTorWebDriver()
-    let httpClient = Util.Web.Tor.initHttpClient torConfig
+type ProxyWebClient (proxy: Util.API.Web.Http.Proxy, resources: Resources) =
+    let webDriver = resources.GetProxyWebDriver()
+    let httpClient = initProxyHttpClient proxy
     interface Util.API.Web.Client.IWebClient with
         member this.GetHtmlContentAsync config url = async { return Util.Web.Driver.loadContent webDriver url }
         member this.GetHtmlContent config url = Util.Web.Driver.loadContent webDriver url
@@ -129,11 +136,11 @@ type TorWebClient (torConfig: Util.API.Web.Tor.Config, resources: Resources) =
 
 let initWebClient 
     (resources: Resources) 
-    (torConfig: Util.API.Web.Tor.Config) 
+    (proxy: Util.API.Web.Http.Proxy) 
     (clientType: Util.API.Web.Client.ClientType) =
     match clientType with
     | HttpClient -> new HttpClient() :> Util.API.Web.Client.IWebClient
     | WebClient -> new WebClient(resources) :> Util.API.Web.Client.IWebClient
-    | TorHttpClient -> new TorHttpClient (torConfig) :> Util.API.Web.Client.IWebClient
-    | TorWebClient -> new TorWebClient (torConfig, resources) :> Util.API.Web.Client.IWebClient
+    | ProxyHttpClient -> new ProxyHttpClient (proxy) :> Util.API.Web.Client.IWebClient
+    | ProxyWebClient -> new ProxyWebClient (proxy, resources) :> Util.API.Web.Client.IWebClient
     | WebStream -> new WebStreamClient() :> Util.API.Web.Client.IWebClient
