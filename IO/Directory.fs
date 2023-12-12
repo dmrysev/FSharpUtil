@@ -95,3 +95,7 @@ let size (path: DirectoryPath) =
 let realPath (dirPath: DirectoryPath) = 
     Util.Process.execute $"realpath '{dirPath.Value}'"
     |> DirectoryPath
+
+let initialize (dirPath: DirectoryPath) = 
+    ensureExists dirPath
+    dirPath
