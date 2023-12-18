@@ -5,7 +5,7 @@ open System.IO
 
 exception QueueLimitReachedException of string
 
-let tempDirPath = Util.Environment.SpecialFolder.temporary/DirectoryName "cb045d48-ac03-4dc2-b5d2-565aa32e70af"
+let tempDirPath = Util.IO.Environment.SpecialFolder.temporary/DirectoryName "cb045d48-ac03-4dc2-b5d2-565aa32e70af"
 let queueLimit = 1000
 
 let getQueueDirPath queueName =
