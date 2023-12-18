@@ -1,4 +1,4 @@
-module Util.IO.Environment
+module Util.Environment
 
 open Util.Path
 open System

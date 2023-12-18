@@ -29,7 +29,7 @@ let deleteSymbolicLink (dirPath: DirectoryPath) =
         dirPath.Value |> FilePath |> Util.IO.File.delete
 
 let generateTemporaryDirectory() =
-    let tempDir = Util.IO.Environment.SpecialFolder.temporary
+    let tempDir = Util.Environment.SpecialFolder.temporary
     let dirName = DirectoryName (Util.Guid.generate())
     let dirPath = tempDir/dirName
     create dirPath
