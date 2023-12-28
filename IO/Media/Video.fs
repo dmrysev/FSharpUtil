@@ -58,3 +58,6 @@ module Format =
             videoChunkFilePath )
         |> merge temporaryDirPath outputVideoFilePath
         Util.IO.Directory.delete temporaryDirPath
+
+    let setResolution (inputVideoFilePath: FilePath) (resoulution: int) (outputVideoFilePath: FilePath) =
+        Util.Process.run $"ffmpeg -i {inputVideoFilePath.Value} -vf scale={resoulution}:-1 -v error {outputVideoFilePath.Value}"
