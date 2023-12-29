@@ -47,7 +47,7 @@ let moveToDirectory (sourceFilePath: FilePath) (destinationDirPath: DirectoryPat
     let destinationFilePath = destinationDirPath/fileName
     System.IO.File.Move(sourceFilePath.Value, destinationFilePath.Value)
 
-let delete (path: FilePath) = System.IO.File.Delete path.Value
+let delete (path: FilePath) = if path |> exists then System.IO.File.Delete path.Value
 
 let copy (sourceFilePath: FilePath) (destinationPath: FilePath) = 
     System.IO.File.Copy(sourceFilePath.Value, destinationPath.Value, true)
