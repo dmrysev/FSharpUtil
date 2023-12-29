@@ -11,5 +11,4 @@ type IWebClient =
     abstract member GetHtmlContentAsync: Http.Config -> Url -> Async<string>
     abstract member DownloadBinary: Http.Config -> Url -> FilePath -> unit
     abstract member DownloadBinaryAsync: Http.Config -> Url -> FilePath -> Async<unit>
-and Events = { 
-    HttpError: IEvent<Http.ErrorDetails> }
+    abstract member Error: IEvent<Http.ErrorDetails>
