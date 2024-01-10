@@ -20,6 +20,7 @@
     <Compile Include="Test.fs" />
     <Compile Include="DataAccess/JsonFileDataAccess.fs" />
     <Compile Include="VersionControl.fs" />
+    <Compile Include="MobileDevice.fs" />
   </ItemGroup>
 
   <ItemGroup>
