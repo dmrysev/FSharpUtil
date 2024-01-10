@@ -15,6 +15,9 @@ let startsWith (subString: string) (str: string) = str.StartsWith(subString)
 let endsWith (subString: string) (str: string) = str.EndsWith(subString)
 let defaultIfEmpty (subString: string) (str: string) = if str = "" then subString else str
 let head (endIndex: int) (str: string) = str.Substring (0, endIndex)
+let headLimit (maxCount: int) (str: string) = 
+    if str.Length > maxCount then str.Substring (0, maxCount - 1)
+    else str
 let tail (startIndex: int) (str: string) = str.Substring (startIndex, str.Length - startIndex)
 let slice (startIndex: int) (endIndex: int) (str: string) = str.Substring (startIndex, endIndex - startIndex + 1)
 
