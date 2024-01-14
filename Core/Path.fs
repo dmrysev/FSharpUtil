@@ -165,7 +165,7 @@ module DirectoryPath =
     let parent(dirPath: DirectoryPath) = 
         let dirName = directoryName dirPath
         dirPath.Value
-        |> Util.String.remove dirName.Value
+        |> Util.String.remove $"/{dirName.Value}"
         |> DirectoryPath
     let parseJsonObj (json: obj) = json |> string |> JsonConvert.DeserializeObject<DirectoryPath>
 
