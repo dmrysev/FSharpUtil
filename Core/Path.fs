@@ -141,6 +141,12 @@ module FilePath =
         filePath.Value 
         |> Util.String.remove toRemove
         |> FilePath
+    let toRelativePath (filePath: FilePath) =
+        if filePath |> isAbsolute then
+            filePath.Value
+            |> Util.String.removeFirstCharacterIfEquals "/"
+            |> FilePath
+        else filePath
     let parseJsonObj (json: obj) = json |> string |> JsonConvert.DeserializeObject<FilePath>
     let hasVideoExtension (filePath: FilePath) = filePath |> fileName |> FileName.hasVideoExtension
     let hasImageExtension (filePath: FilePath) = filePath |> fileName |> FileName.hasImageExtension
@@ -167,6 +173,12 @@ module DirectoryPath =
         dirPath.Value
         |> Util.String.remove $"/{dirName.Value}"
         |> DirectoryPath
+    let toRelativePath(dirPath: DirectoryPath) = 
+        if dirPath |> isAbsolute then
+            dirPath.Value
+            |> Util.String.removeFirstCharacterIfEquals "/"
+            |> DirectoryPath
+        else dirPath
     let parseJsonObj (json: obj) = json |> string |> JsonConvert.DeserializeObject<DirectoryPath>
 
 type DirectoryPath with

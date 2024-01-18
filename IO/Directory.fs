@@ -64,8 +64,13 @@ let copy (source: DirectoryPath) (destination: DirectoryPath) = raise (System.No
 
 let move (source: DirectoryPath) (destination: DirectoryPath) = 
     let destination = 
-        if destination |> exists then destination/(source |> DirectoryPath.directoryName)
+        if destination |> exists then 
+            let outputDirName = source |> DirectoryPath.directoryName
+            destination/outputDirName
         else destination
+    destination
+    |> DirectoryPath.parent
+    |> ensureExists
     System.IO.Directory.Move(source.Value, destination.Value)
 
 let createSymbolicLink (sourcePath: DirectoryPath) (destinationPath: string) =

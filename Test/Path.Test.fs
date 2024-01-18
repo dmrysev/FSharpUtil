@@ -109,3 +109,8 @@ let ``Get file name``() =
 [<Test>]
 let ``Get file name without extension``() =
     FilePath "/some/path/to/file.txt" |> FilePath.fileNameWithoutExtension |> should equal (FileName "file")
+
+[<Test>]
+let ``Convert absolute path to relative``() =
+    FilePath "/some/path/to/file.txt" |> FilePath.toRelativePath |> should equal (FilePath "some/path/to/file.txt")
+    DirectoryPath "/some/dir/path" |> DirectoryPath.toRelativePath |> should equal (DirectoryPath "some/dir/path")
