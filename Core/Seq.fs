@@ -35,6 +35,16 @@ let tryFindItemBy predicate items =
     | Some index -> items |> Seq.item index |> Some
     | None -> None
 
+let tryFindItemBack item items =
+    match items |> Seq.tryFindIndexBack (fun x -> x = item) with
+    | Some index -> items |> Seq.item index |> Some
+    | None -> None
+
+let tryFindItemBackBy predicate items =
+    match items |> Seq.tryFindIndexBack predicate with
+    | Some index -> items |> Seq.item index |> Some
+    | None -> None
+
 let appendItem item items = Seq.append items [item]
 let prependItem item items = Seq.append [item] items
 
