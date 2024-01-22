@@ -37,3 +37,5 @@ let strip chars str =
 let remove (toRemove: string) (text: string) =
     if toRemove = "" then text
     else text.Replace(toRemove, "")
+
+let insert startIndex value (str: string) = str.Insert(startIndex, value) 
