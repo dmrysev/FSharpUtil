@@ -50,6 +50,11 @@ let prependItem item items = Seq.append [item] items
 
 let tailN n items = items |> Seq.skip (Seq.length items - n)
 
+let maxTail count items =
+    if items |> Seq.length >= count
+    then items |> tailN count
+    else items
+
 let lastIndex items = Seq.length items - 1
 
 let shuffle seq =
