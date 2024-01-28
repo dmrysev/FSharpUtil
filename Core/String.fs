@@ -1,5 +1,6 @@
 module Util.String
 
+open System
 open System.Text.RegularExpressions
 
 let extractInt text = Regex.Match(text, @"\d+").Value |> int
@@ -11,6 +12,7 @@ let removeLastCharacters (count: int) (str: string) = str.Remove(str.Length - co
 let removeLastCharacter (str: string) = str.Remove(str.Length - 1)
 let removeFirstCharacter (str: string) = str.Remove(0, 1)
 let contains (subString: string) (str: string) = str.Contains(subString)
+let containsIgnoreCase (subString: string) (str: string) = str.Contains(subString, StringComparison.InvariantCultureIgnoreCase)
 let startsWith (subString: string) (str: string) = str.StartsWith(subString)
 let endsWith (subString: string) (str: string) = str.EndsWith(subString)
 let defaultIfEmpty (subString: string) (str: string) = if str = "" then subString else str
