@@ -59,5 +59,13 @@ module Format =
         |> merge temporaryDirPath outputVideoFilePath
         Util.IO.Directory.delete temporaryDirPath
 
+    let splitIntoChunks (inputVideoFilePath: FilePath) (chunksCount: int) (outputDirPath: DirectoryPath) =
+        Util.IO.Directory.ensureExists outputDirPath
+        let extension = inputVideoFilePath |> FilePath.fileExtension
+        let duration = Info.duration inputVideoFilePath
+        let chuckDuration = duration / (double chunksCount)
+        $"ffmpeg -i '{inputVideoFilePath.Value}' -c copy -v error -map 0 -segment_time {chuckDuration} -f segment -reset_timestamps 1 {outputDirPath.Value}/" + "%03d.mp4"
+        |> Util.Process.run
+
     let setResolution (inputVideoFilePath: FilePath) (resoulution: int) (outputVideoFilePath: FilePath) =
         Util.Process.run $"ffmpeg -i {inputVideoFilePath.Value} -vf scale={resoulution}:-1 -v error {outputVideoFilePath.Value}"
