@@ -24,6 +24,7 @@
     <Compile Include="Reactive.fs" />
     <Compile Include="Reflection.fs" />
     <Compile Include="Environment.fs" />
+    <Compile Include="Drawing.fs" />
   </ItemGroup>
 
   <ItemGroup>
