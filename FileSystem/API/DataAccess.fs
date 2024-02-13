@@ -27,4 +27,17 @@ type DataAccess = {
         MoveToTrashBin: DirectoryPath -> unit |}
     FileSystemEntry: {|
         MoveToTrashBin: Path -> unit
-        Exists: Path -> bool |}      }
+        Exists: Path -> bool |}
+    Clipboard: {|
+        GetText: unit -> string
+        SetText: string -> unit |}       }
+
+type GenericDataAccess<'Id, 'Data when 'Id: equality> = {
+    List: unit -> 'Id seq
+    Read: 'Id -> 'Data
+    TryRead: 'Id -> 'Data option
+    ReadAll: unit -> 'Data seq
+    Write: 'Id -> 'Data -> unit
+    WriteEvent: IEvent<'Id>
+    Delete: 'Id -> unit
+    EnsureDeleted: 'Id -> unit }

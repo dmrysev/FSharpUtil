@@ -3,16 +3,6 @@ namespace Util.Core.FileSystem
 open Util
 open Util.Path
 
-type GenericDataAccess<'Id, 'Data when 'Id: equality> = {
-    List: unit -> 'Id seq
-    Read: 'Id -> 'Data
-    TryRead: 'Id -> 'Data option
-    ReadAll: unit -> 'Data seq
-    Write: 'Id -> 'Data -> unit
-    WriteEvent: IEvent<'Id>
-    Delete: 'Id -> unit
-    EnsureDeleted: 'Id -> unit }
-
 module GenericDataAccess =
     let getFileNameString filePath =
         filePath 
@@ -41,7 +31,7 @@ module GenericDataAccess =
             fileSystem.Directory.ListFiles dirPath
             |> Seq.filter (FilePath.hasExtension "json")
             |> Seq.find (filePathIdCompare id)
-        let dataAccess: GenericDataAccess<'Id, 'Data> = {
+        let dataAccess: API.FileSystem.GenericDataAccess<'Id, 'Data> = {
             List = fun _ ->
                 fileSystem.Directory.ListFiles dirPath
                 |> Seq.filter (FilePath.hasExtension "json")
@@ -85,6 +75,10 @@ module GenericDataAccess =
                 | None -> ()   }
         dataAccess
 
-    let init<'Data> (dirPath: DirectoryPath) (fileSystem: API.FileSystem.DataAccess) =
+    let initWithGuid<'Data> (dirPath: DirectoryPath) (fileSystem: API.FileSystem.DataAccess) =
         fileSystem.Directory.EnsureExists dirPath
         initWithCustomId<System.Guid, 'Data> dirPath fileSystem (fun id -> id.ToString()) (fun idString -> System.Guid idString)
+
+    let initWithStringId<'Data> (dirPath: DirectoryPath) (fileSystem: API.FileSystem.DataAccess) =
+        fileSystem.Directory.EnsureExists dirPath
+        initWithCustomId<string, 'Data> dirPath fileSystem (fun id -> id) (fun idString -> idString)

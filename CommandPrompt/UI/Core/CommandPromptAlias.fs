@@ -11,7 +11,7 @@ type AliasEntry = { Name: string; Command: string }
 
 let initDataAccess (appDataDirPath: DirectoryPath) (fileSystem: API.FileSystem.DataAccess) =
     let aliasDirPath = appDataDirPath/DirectoryPath "CommandPrompt/aliases"
-    Core.FileSystem.GenericDataAccess.initWithCustomId<string, AliasEntry> aliasDirPath fileSystem (fun id -> id) (fun idString -> idString)
+    Core.FileSystem.GenericDataAccess.initWithStringId<AliasEntry> aliasDirPath fileSystem
 
 type MainViewModel (
     fileSystem: FileSystem.DataAccess, 

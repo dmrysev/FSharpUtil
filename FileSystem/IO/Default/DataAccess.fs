@@ -80,5 +80,8 @@ let init (appDataDirPath: DirectoryPath) =
             Exists = fun path ->
                 match path with
                 | File filePath -> Util.IO.File.exists filePath
-                | Directory dirPath -> Util.IO.Directory.exists dirPath |}       }
+                | Directory dirPath -> Util.IO.Directory.exists dirPath |}
+        Clipboard = {|
+            GetText = Util.IO.Clipboard.get
+            SetText = Util.IO.Clipboard.set |}      }
     dataAccess
