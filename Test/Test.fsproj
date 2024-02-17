@@ -21,7 +21,6 @@
     <ProjectReference Include="..\Web\FSharpUtil.Web.fsproj" />
     <ProjectReference Include="..\Encryption\FSharpUtil.Encryption.fsproj" />
     <ProjectReference Include="..\MessageQueue\FSharpUtil.MessageQueue.fsproj" />
-    <ProjectReference Include="..\CommandPrompt\Core\Util.Core.CommandPrompt.fsproj" />
   </ItemGroup>
 
 </Project>
