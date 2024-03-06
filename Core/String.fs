@@ -36,6 +36,8 @@ let strip chars str =
         str.Replace(chr |> System.Char.ToUpper |> string, "").Replace(chr |> System.Char.ToLower |> string, ""))
         str chars
 
+let trim (str: string) = str.Trim()
+
 let remove (toRemove: string) (text: string) =
     if toRemove = "" then text
     else text.Replace(toRemove, "")
