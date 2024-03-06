@@ -25,6 +25,7 @@
     <Compile Include="Reflection.fs" />
     <Compile Include="Environment.fs" />
     <Compile Include="Drawing.fs" />
+    <Compile Include="Finance.fs" />
   </ItemGroup>
 
   <ItemGroup>
