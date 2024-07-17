@@ -2,10 +2,6 @@ module Util.Path
 
 open Newtonsoft.Json
 
-let hasOverlap seqA seqB = 
-    let resultSeqA = seqA |> Seq.except seqB
-    (resultSeqA |> Seq.length) < (seqA |> Seq.length)
-
 let invalidCharacters = ['/'; '<'; '>'; ':'; '"'; '/'; '\\'; '|'; '?'; '*']
 let directorySeparatorChar = '/'
 

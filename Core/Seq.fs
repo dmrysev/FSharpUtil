@@ -8,8 +8,9 @@ let hasOverlap seqA seqB =
 
 let replace oldItem newItem seq = 
     seq
-    |> Seq.except [oldItem]
-    |> Seq.append [newItem]
+    |> Seq.map (fun item ->
+        if item = oldItem then newItem
+        else item)
 
 let hasItemAt index items =
     index >= 0 && index < (items |> Seq.length)
