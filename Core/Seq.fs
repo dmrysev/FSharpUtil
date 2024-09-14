@@ -79,3 +79,10 @@ let limitItems (startIndex: int) (maxResultCount: int) items =
         items
         |> Seq.skip startIndex
         |> Seq.take maxResultCount
+
+let moveToTop item items =
+    let filteredSeq = items |> Seq.filter ((<>) item)
+    seq {
+        yield item
+        yield! filteredSeq
+    }

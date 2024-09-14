@@ -43,3 +43,13 @@ let ``Remove existing item from sequence``() =
 
     // ASSERT
     result |> should equal (seq { 1; 3 })
+
+[<Test>]
+let ``Move an item to the top of a seq``() =
+    [ 1; 2; 3; 4; 5 ] |> Util.Seq.moveToTop 3 |> should equal [ 3; 1; 2; 4; 5 ]
+    [ 3; 1; 2; 4; 5 ] |> Util.Seq.moveToTop 3 |> should equal [ 3; 1; 2; 4; 5 ]
+    [ 1; 2; 4; 5 ] |> Util.Seq.moveToTop 3 |> should equal [ 3; 1; 2; 4; 5 ]
+    [ 3 ] |> Util.Seq.moveToTop 3 |> should equal [ 3 ]
+    [ 1 ] |> Util.Seq.moveToTop 3 |> should equal [ 3; 1 ]
+    [] |> Util.Seq.moveToTop 3 |> should equal [ 3 ]
+    [ 1; 3; 3; 4; 5 ] |> Util.Seq.moveToTop 3 |> should equal [ 3; 1; 4; 5 ]
