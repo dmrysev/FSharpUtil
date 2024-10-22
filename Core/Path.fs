@@ -166,9 +166,12 @@ module DirectoryPath =
         |> DirectoryName
     let parent(dirPath: DirectoryPath) = 
         let dirName = directoryName dirPath
-        dirPath.Value
-        |> Util.String.remove $"/{dirName.Value}"
-        |> DirectoryPath
+        let parentString =
+            dirPath.Value
+            |> Util.String.remove dirName.Value
+            |> Util.String.removeLastCharacterIfEquals "/"
+        if parentString = "" then raise (System.ArgumentException "Path has no parent")
+        else DirectoryPath parentString
     let toRelativePath(dirPath: DirectoryPath) = 
         if dirPath |> isAbsolute then
             dirPath.Value
