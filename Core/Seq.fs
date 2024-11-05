@@ -13,12 +13,13 @@ let replace oldItem newItem seq =
         else item)
 
 let hasItemAt index items =
-    index >= 0 && index < (items |> Seq.length)
+    (items |> Seq.isEmpty |> not)
+    && index >= 0 
+    && index < (items |> Seq.length)
 
 let removeItem item items =
     let index = items |> Seq.findIndex (fun x -> x = item)
     items |> Seq.removeAt index
-
 
 let findItemIndex item items =
     items |> Seq.findIndex (fun x -> x = item)
