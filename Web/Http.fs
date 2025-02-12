@@ -14,13 +14,21 @@ let loadHtmlAsync
             match config.Headers with
             | Some headers -> headers |> Seq.iter message.Headers.Add
             | None -> ()
+            match config.Cookies with
+            | Some cookies ->
+                let cookieHeader = 
+                    cookies 
+                    |> Seq.map (fun (name, value) -> sprintf "%s=%s" name value)
+                    |> String.concat "; "
+                message.Headers.TryAddWithoutValidation("Cookie", cookieHeader) |> ignore
+            | None -> ()
             use! response = httpClient.SendAsync(message, System.Net.Http.HttpCompletionOption.ResponseHeadersRead) |> Async.AwaitTask
             use response = response.EnsureSuccessStatusCode()
             let! content = response.Content.ReadAsStringAsync() |> Async.AwaitTask
             return content
         with error ->
             errorEvent.Trigger { Error = error; Attempt = attempt }
-            if attempt = config.MaxRetriesOnError then raise error
+            if not config.RetryOnHttpError || attempt = config.MaxRetriesOnError then raise error
             do! Util.Async.sleep config.ErrorRetryTimeout
             return tryRun(attempt + 1) |> Async.RunSynchronously }
     tryRun(0), events
@@ -40,6 +48,14 @@ let downloadBinaryAsync
             match config.Headers with
             | Some headers -> headers |> Seq.iter message.Headers.Add
             | None -> ()
+            match config.Cookies with
+            | Some cookies ->
+                let cookieHeader = 
+                    cookies 
+                    |> Seq.map (fun (name, value) -> sprintf "%s=%s" name value)
+                    |> String.concat "; "
+                message.Headers.TryAddWithoutValidation("Cookie", cookieHeader) |> ignore
+            | None -> ()
             use! response = httpClient.SendAsync(message, System.Net.Http.HttpCompletionOption.ResponseHeadersRead) |> Async.AwaitTask
             response.EnsureSuccessStatusCode() |> ignore
             use! inputStream = response.Content.ReadAsStreamAsync() |> Async.AwaitTask
@@ -49,7 +65,7 @@ let downloadBinaryAsync
             Util.IO.File.move tempOutputFilePath outputFilePath
         with error ->
             errorEvent.Trigger { Error = error; Attempt = attempt }
-            if attempt = config.MaxRetriesOnError then 
+            if not config.RetryOnHttpError || attempt = config.MaxRetriesOnError then 
                 Util.IO.File.delete tempOutputFilePath
                 raise error
             else 
