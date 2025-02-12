@@ -108,7 +108,7 @@ type WebClient (resources: Resources, temporaryDirPath: DirectoryPath) =
 
 type WebStreamClient (temporaryDirPath: DirectoryPath) =
     let client = new System.Net.Http.HttpClient()
-    let initCommand (url: Url) (outputFilePath: FilePath) = $"yt-dlp {url.Value} -o '{outputFilePath.Value}' -S 'res:720'"
+    let initCommand (url: Url) (outputFilePath: FilePath) = $"yt-dlp {url.Value} -o '{outputFilePath.Value}' -S 'res:720' --no-warnings"
     let httpError = Event<API.Web.Http.ErrorDetails>()
     interface Util.API.Web.Client.IWebClient with
         member this.GetHtmlContentAsync config url = getHtmlContentAsync client config httpError url
