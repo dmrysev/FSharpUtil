@@ -8,7 +8,7 @@ type QueryOptions = {
     ResponseTimeout: System.TimeSpan
     MaxRetries: int }
 with static member Default = {
-        ResponseTimeout = System.TimeSpan.FromSeconds(30)
+        ResponseTimeout = System.TimeSpan.FromSeconds(30.0)
         MaxRetries = 0 }
 
 let handleQueryResponse (options: QueryOptions) (query: Query<'RequestArgs, 'ResponseMessage>) (requester: MessageQueueQuery.Requester<'RequestArgs, 'ResponseMessage>) sendRequest =
@@ -51,7 +51,7 @@ type CommandOptions = {
     ResponseTimeout: System.TimeSpan
     MaxRetries: int }
 with static member Default = {
-        ResponseTimeout = System.TimeSpan.FromSeconds(30)
+        ResponseTimeout = System.TimeSpan.FromSeconds(30.0)
         MaxRetries = 0 }
 
 let sendCommand<'RequestArgs> (options: CommandOptions) (requestArgs: 'RequestArgs) (command: Command<'RequestArgs>): MessageQueueCommand.Response =

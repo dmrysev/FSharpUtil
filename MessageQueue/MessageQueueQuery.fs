@@ -34,7 +34,7 @@ and Requester<'RequestArgs, 'ResponseMessage> (
     let requestQueueName = $"{queueName}/request/{recieverId}"
     let responseQueueName = $"{queueName}/response/{recieverId}"
     let responseTimeoutMilliseconds = 
-        let timeout = responseTimeout |> Option.defaultValue (System.TimeSpan.FromMinutes 1)
+        let timeout = responseTimeout |> Option.defaultValue (System.TimeSpan.FromMinutes 1.0)
         timeout.TotalMilliseconds |> int
     let responseMaxRetries = responseMaxRetries |> Option.defaultValue 3
     let newResponseEvent = new Event<Response<'ResponseMessage>>()

@@ -61,6 +61,8 @@ let downloadBinaryAsync
             use! inputStream = response.Content.ReadAsStreamAsync() |> Async.AwaitTask
             use outputStream = System.IO.File.Open(tempOutputFilePath.Value, System.IO.FileMode.Create)
             do! inputStream.CopyToAsync(outputStream) |> Async.AwaitTask
+            outputStream.Flush()
+            outputStream.Close()
             outputFilePath |> FilePath.directoryPath |> Util.IO.Directory.ensureExists
             Util.IO.File.move tempOutputFilePath outputFilePath
         with error ->

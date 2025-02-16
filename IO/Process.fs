@@ -1,17 +1,18 @@
 module Util.Process
 
 let useBash (command: string) (p: System.Diagnostics.Process) =
-    p.StartInfo.FileName <- "/bin/bash"
+    p.StartInfo.FileName <- "bash"
     let arguments = sprintf "-c \"%s\"" command
     p.StartInfo.Arguments <- arguments
     p
 
 let useBashScript (command: string) (p: System.Diagnostics.Process) =
     let guid = System.Guid.NewGuid().ToString()
-    let temporaryScriptFile = "/tmp/" + guid + ".sh"
+    let tempPath = System.IO.Path.GetTempPath()
+    let temporaryScriptFile = tempPath + "/" + guid + ".sh"
     System.IO.File.WriteAllText(temporaryScriptFile, command)
     p.Exited.Add (fun _ -> System.IO.File.Delete temporaryScriptFile)
-    p.StartInfo.FileName <- "/bin/bash"
+    p.StartInfo.FileName <- "bash"
     p.StartInfo.Arguments <- temporaryScriptFile
     p
 
