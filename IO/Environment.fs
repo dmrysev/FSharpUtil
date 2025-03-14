@@ -17,21 +17,23 @@ module BatteryInfo =
 
     let getBatteryInfo() =
         let parseBatteryInfo acpiOutput =
-            let id =
-                acpiOutput 
-                |> Util.String.split ":" 
-                |> Seq.head
-                |> Util.String.extractInt
-            let infoChunks = 
-                acpiOutput
-                |> Util.String.split ","
-            let state =
-                let stateStr = infoChunks[0] |> Util.String.toLower
-                if stateStr |> Util.String.contains "charging" then State.Charging
-                elif stateStr |> Util.String.contains "discharging" then State.Discharging
-                else State.Unknown
-            let charge = infoChunks[1] |> Util.String.extractInt
-            { BatteryInfo.Id = id; State = state; Charge = charge }
+            if acpiOutput = "" then { BatteryInfo.Id = -1; State = State.Unknown; Charge = 0 }
+            else
+                let id =
+                    acpiOutput 
+                    |> Util.String.split ":" 
+                    |> Seq.head
+                    |> Util.String.extractInt
+                let infoChunks = 
+                    acpiOutput
+                    |> Util.String.split ","
+                let state =
+                    let stateStr = infoChunks[0] |> Util.String.toLower
+                    if stateStr |> Util.String.contains "charging" then State.Charging
+                    elif stateStr |> Util.String.contains "discharging" then State.Discharging
+                    else State.Unknown
+                let charge = infoChunks[1] |> Util.String.extractInt
+                { BatteryInfo.Id = id; State = state; Charge = charge }
 
         Util.Process.execute "acpi"
         |> Util.String.split "\n"
