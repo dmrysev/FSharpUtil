@@ -18,3 +18,10 @@ let bind binder asnc = async {
 let map mapper asnc = async {
     let! value = asnc
     return value |> mapper }
+
+let repeat (n: int) (delayMs: int) (action: unit -> unit) =
+    async {
+        for _ in 1 .. n do
+            action()
+            do! Async.Sleep delayMs
+    }
