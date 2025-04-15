@@ -89,6 +89,14 @@ let isInside (dirPath: DirectoryPath) (path: Path) =
     | File path -> path.Value |> Util.String.startsWith dirPath.Value
     | Directory path -> path.Value |> Util.String.startsWith dirPath.Value
 
+let isLikelyFilePath (path: string) =
+    let fileName = System.IO.Path.GetFileName(path)
+    not (System.String.IsNullOrWhiteSpace(System.IO.Path.GetExtension(fileName)))
+
+let init (path: string) =
+    if isLikelyFilePath path then File (FilePath path)
+    else Directory (DirectoryPath path)
+
 module FileName =
     let value (fileName: FileName) = fileName.Value
     let extension(fileName: FileName) = 
