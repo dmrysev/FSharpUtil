@@ -81,6 +81,10 @@ let limitItems (startIndex: int) (maxResultCount: int) items =
         |> Seq.skip startIndex
         |> Seq.take maxResultCount
 
+let applyPaging (maxItems: int) (page: int) items =
+    let startIndex = (page - 1) * maxItems
+    items |> limitItems startIndex maxItems
+
 let moveToTop item items =
     let filteredSeq = items |> Seq.filter ((<>) item)
     seq {
